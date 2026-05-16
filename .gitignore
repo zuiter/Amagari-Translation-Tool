@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# Fabric
+run/
+
+# Local/runtime
+.omx/
+
+# Java
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr

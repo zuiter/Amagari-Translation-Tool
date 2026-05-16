@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "amagari_translation_tool",
+	"version": "${version}",
+	"name": "Amagari Translation Tool",
+	"description": "A Fabric translation helper mod for Amagari projects.",
+	"authors": [
+		"zero-zuiter_ZTXL"
+	],
+	"contact": {
+		"sources": "https://github.com/zuiter/amagari-translation-tool"
+	},
+	"license": "CC0-1.0",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.amagari.translationtool.AmagariTranslationTool"
+		],
+		"client": [
+			"com.amagari.translationtool.client.AmagariTranslationToolClient"
+		]
+	},
+	"mixins": [
+		"amagari_translation_tool.client.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.2",
+		"minecraft": "${minecraft_dependency}",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

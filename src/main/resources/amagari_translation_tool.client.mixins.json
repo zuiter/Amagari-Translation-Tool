@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"package": "com.amagari.translationtool.mixin.client",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"ClientLanguageMixin",
+		"MinecraftMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
