@@ -35,10 +35,13 @@ Expected after a clean build:
 
 Use this checklist when manually testing world language files:
 
+- Enter a world without an existing `amagari_translation_tool/lang` directory and confirm the mod creates it automatically.
 - Create `saves/<world>/amagari_translation_tool/lang/<current_language>.json` with a known vanilla translation key override.
 - Enter the singleplayer world and confirm the overridden text appears without enabling a resource pack.
-- Edit the file, run `/amagari_lang reload`, and confirm the changed translation appears.
-- Run `/amagari_lang status` and confirm it reports the loaded file and entry count.
+- Edit the file, run `/amagari_lang reload`, and confirm the changed translation appears and no red server-side command parse error is shown.
+- Run `/amagari_lang status` and confirm it reports the loaded file and entry count without a red server-side command parse error.
+- Run `/amagari_lang help` and confirm it lists `help`, `reload`, `status`, `pull`, and `push` only for the executing player.
+- Switch the client language between Chinese and English, then confirm `/amagari_lang help`, `/amagari_lang reload`, and `/amagari_lang status` feedback follows the executing client's language.
 - Add a malformed JSON file and confirm the client keeps running while the mod logs/skips the bad file.
 - Leave the world and enter a different world without language files; confirm the previous world's overrides no longer apply after reload.
 
@@ -47,6 +50,7 @@ Use this checklist when manually testing world language files:
 Use this checklist when manually testing remote server language delivery:
 
 - Install the mod on both the dedicated server and the client.
+- Start or join once without an existing `<server world directory>/amagari_translation_tool/lang` directory and confirm the mod creates it automatically.
 - Create `<server world directory>/amagari_translation_tool/lang/en_us.json` and `<server world directory>/amagari_translation_tool/lang/<client_language>.json` with known vanilla translation key overrides.
 - Join the remote server and confirm the overridden text appears without enabling a resource pack.
 - Run `/amagari_lang status` on the client and confirm it reports remote world language entries.
@@ -54,6 +58,7 @@ Use this checklist when manually testing remote server language delivery:
 - Rejoin the same server without changing files and confirm `/amagari_lang status` reports cached manifest handling without requiring a fresh data download.
 - Edit a server-side language file, run `/amagari_lang push` as an operator, and confirm the connected client requests and receives only the changed language data.
 - Run `/amagari_lang pull` as a normal player and confirm the server publishes a fresh manifest for that player.
+- Confirm `/amagari_lang pull` and `/amagari_lang push` feedback is visible only to the executing player and follows that player's client language.
 - Join with a client that does not have this mod installed and confirm the server keeps running without trying to send unsupported payloads.
 - Change the client's language, reconnect or run `/amagari_lang pull`, and confirm the server offers the newly selected language plus `en_us`.
 - Add a malformed JSON file on the server and confirm the server logs/skips it while still sending valid files.

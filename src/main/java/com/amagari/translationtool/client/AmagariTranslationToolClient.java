@@ -1,13 +1,12 @@
 package com.amagari.translationtool.client;
 
+import com.amagari.translationtool.network.WorldLanguageCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageDataPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
 import com.amagari.translationtool.network.WorldLanguageRequestPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
@@ -32,37 +31,21 @@ public class AmagariTranslationToolClient implements ClientModInitializer {
 			WorldLanguageContext.receiveRemoteLanguageData(context.client(), payload);
 			WorldLanguageClient.reloadLanguage(context.client());
 		}));
+		ClientPlayNetworking.registerGlobalReceiver(WorldLanguageCommandPayload.TYPE, (payload, context) -> context.client().execute(() -> handleServerCommand(payload, context.client())));
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WorldLanguageContext.leaveWorld());
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(
-				ClientCommands.literal("amagari_lang")
-						.then(ClientCommands.literal("reload").executes(context -> {
-							Minecraft client = context.getSource().getClient();
-							WorldLanguageClient.reloadLanguage(client);
-							context.getSource().sendFeedback(Component.literal(WorldLanguageContext.describeLastReport()));
-							return 1;
-						}))
-						.then(ClientCommands.literal("status").executes(context -> {
-							context.getSource().sendFeedback(Component.literal(WorldLanguageContext.describeLastReport()));
-							return 1;
-						}))
-						.then(ClientCommands.literal("push").executes(context -> {
-							Minecraft client = context.getSource().getClient();
-							if (client.getConnection() == null) {
-								context.getSource().sendError(Component.literal("No remote server connection is active."));
-								return 0;
-							}
-							client.getConnection().sendCommand("amagari_lang push");
-							return 1;
-						}))
-						.then(ClientCommands.literal("pull").executes(context -> {
-							Minecraft client = context.getSource().getClient();
-							if (client.getConnection() == null) {
-								context.getSource().sendError(Component.literal("No remote server connection is active."));
-								return 0;
-							}
-							client.getConnection().sendCommand("amagari_lang pull");
-							return 1;
-						}))
-		));
+	}
+
+	private static void handleServerCommand(WorldLanguageCommandPayload payload, Minecraft client) {
+		if (payload.action() == WorldLanguageCommandPayload.Action.RELOAD) {
+			WorldLanguageClient.reloadLanguage(client, () -> sendCommandFeedback(client));
+			return;
+		}
+		sendCommandFeedback(client);
+	}
+
+	private static void sendCommandFeedback(Minecraft client) {
+		if (client.player != null) {
+			client.player.sendSystemMessage(Component.literal(WorldLanguageContext.describeLastReport(client.getLanguageManager().getSelected())));
+		}
 	}
 }

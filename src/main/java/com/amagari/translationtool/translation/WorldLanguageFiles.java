@@ -25,8 +25,10 @@ public final class WorldLanguageFiles {
 
 	public static WorldLanguageResult loadSelectedInto(Path worldDirectory, List<String> languageCodes, Map<String, String> translations) {
 		Path languageDirectory = worldDirectory.resolve(LANG_DIRECTORY);
-		if (!Files.isDirectory(languageDirectory)) {
-			return WorldLanguageResult.empty(worldDirectory);
+		try {
+			ensureLanguageDirectory(worldDirectory);
+		} catch (IOException exception) {
+			return WorldLanguageResult.failed(worldDirectory, languageDirectory, exception);
 		}
 
 		StringJoiner loadedLanguages = new StringJoiner(", ");
@@ -51,8 +53,10 @@ public final class WorldLanguageFiles {
 
 	public static WorldLanguageCollection loadAll(Path worldDirectory) {
 		Path languageDirectory = worldDirectory.resolve(LANG_DIRECTORY);
-		if (!Files.isDirectory(languageDirectory)) {
-			return WorldLanguageCollection.empty(worldDirectory);
+		try {
+			ensureLanguageDirectory(worldDirectory);
+		} catch (IOException exception) {
+			return WorldLanguageCollection.failed(worldDirectory, languageDirectory, exception);
 		}
 
 		List<Path> languageFiles;
@@ -130,6 +134,14 @@ public final class WorldLanguageFiles {
 		String baseName = fileName.substring(0, fileName.length() - JSON_EXTENSION.length());
 		int splitIndex = baseName.indexOf('.');
 		return splitIndex < 0 ? baseName : baseName.substring(0, splitIndex);
+	}
+
+	private static void ensureLanguageDirectory(Path worldDirectory) throws IOException {
+		Path languageDirectory = worldDirectory.resolve(LANG_DIRECTORY);
+		if (!Files.isDirectory(languageDirectory)) {
+			Files.createDirectories(languageDirectory);
+			AmagariTranslationTool.LOGGER.info("Created world language directory {}", languageDirectory);
+		}
 	}
 
 	private record LanguageLoadResult(

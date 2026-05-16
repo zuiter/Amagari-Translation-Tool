@@ -4,6 +4,7 @@
 	"version": "${version}",
 	"name": "Amagari Translation Tool",
 	"description": "A Fabric translation helper mod for Amagari projects.",
+	"icon": "assets/amagari_translation_tool/icon.png",
 	"authors": [
 		"zero-zuiter_ZTXL"
 	],

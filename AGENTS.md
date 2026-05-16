@@ -20,6 +20,7 @@ It should evolve with the project. Update it when a rule becomes stale, too stri
 - Client-only state must reset on disconnect or world changes when state can leak.
 - Mixins should be minimal, side-specific, and registered in the correct mixin config.
 - Keep server gameplay state and client-only presentation state clearly separated.
+- For slash commands that interact with client-only state, self-review both the client command path and the integrated/dedicated server command tree. Avoid same-root client/server command conflicts unless singleplayer, LAN, and remote-server behavior have explicit checks.
 
 ## Post-Feature Workflow
 
@@ -38,6 +39,7 @@ Use subagents only for narrow, independent review or documentation checks. Close
 - Default build command: `.\gradlew-java25.bat build --stacktrace`.
 - Do not claim runtime behavior was manually tested unless a Minecraft client/server test was actually performed.
 - For multiplayer, translation UI, or client-state features, add or update a short manual test checklist in `docs/TESTING.md`.
+- Command features must include a manual check that the expected feedback appears in chat and no red Brigadier parse error is produced in singleplayer integrated-server worlds.
 
 ## CI And Release
 

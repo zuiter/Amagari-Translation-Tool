@@ -2,6 +2,7 @@ package com.amagari.translationtool.client;
 
 import com.amagari.translationtool.AmagariTranslationTool;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
+import com.amagari.translationtool.translation.WorldLanguageMessages;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -54,17 +55,18 @@ public record WorldLanguageReport(
 	}
 
 	public String describe() {
+		return describe("en_us");
+	}
+
+	public String describe(String feedbackLanguageCode) {
 		return switch (status) {
-			case NOT_LOADED -> "No singleplayer world language directory is active.";
-			case EMPTY -> "No world language files loaded from " + languageDirectory + ".";
-			case LOADED -> "Loaded " + loadedEntries + " translation entries from " + loadedFiles + " world language file(s)"
-					+ (failedFiles == 0 ? "" : "; " + failedFiles + " file(s) failed")
-					+ (languageCode.isBlank() ? "." : " for " + languageCode + ".");
-			case REMOTE_READY -> "Received " + loadedEntries + " remote world language entries for " + loadedFiles + " language(s).";
-			case REMOTE_MANIFEST -> "Received remote language manifest for " + loadedFiles + " language(s); "
-					+ loadedEntries + " cached, " + failedFiles + " pending download.";
-			case REMOTE_LOADED -> "Loaded " + loadedEntries + " remote world language entries for " + loadedFiles + " active language(s).";
-			case FAILED -> "Failed to scan world language directory " + languageDirectory + ": " + error;
+			case NOT_LOADED -> WorldLanguageMessages.notLoaded(feedbackLanguageCode);
+			case EMPTY -> WorldLanguageMessages.empty(languageDirectory, feedbackLanguageCode);
+			case LOADED -> WorldLanguageMessages.loaded(loadedEntries, loadedFiles, failedFiles, languageCode, feedbackLanguageCode);
+			case REMOTE_READY -> WorldLanguageMessages.remoteReady(loadedEntries, loadedFiles, feedbackLanguageCode);
+			case REMOTE_MANIFEST -> WorldLanguageMessages.remoteManifest(loadedFiles, loadedEntries, failedFiles, feedbackLanguageCode);
+			case REMOTE_LOADED -> WorldLanguageMessages.remoteLoaded(loadedFiles, loadedEntries, feedbackLanguageCode);
+			case FAILED -> WorldLanguageMessages.failed(languageDirectory, error, feedbackLanguageCode);
 		};
 	}
 

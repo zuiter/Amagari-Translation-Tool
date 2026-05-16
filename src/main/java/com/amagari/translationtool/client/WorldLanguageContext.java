@@ -100,6 +100,10 @@ public final class WorldLanguageContext {
 		return LAST_REPORT.get().describe();
 	}
 
+	public static String describeLastReport(String languageCode) {
+		return LAST_REPORT.get().describe(languageCode);
+	}
+
 	private static WorldLanguageReport mergeRemoteTranslations(List<String> languageCodes, Map<String, String> translations, Map<String, Map<String, String>> translationsByLanguage) {
 		int loadedEntries = 0;
 		int loadedLanguages = 0;

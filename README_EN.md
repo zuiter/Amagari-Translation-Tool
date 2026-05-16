@@ -17,7 +17,7 @@ The project currently supports loading language files from a world directory int
 
 ## World Language Files
 
-Place language files under `amagari_translation_tool/lang` inside the world save directory:
+The mod automatically creates `amagari_translation_tool/lang` inside the world save directory; place language files in that directory after it appears:
 
 ```text
 saves/<world name>/amagari_translation_tool/lang/zh_cn.json
@@ -38,13 +38,16 @@ The file format matches resource-pack language files at `assets/<namespace>/lang
 Loading rules:
 
 - After entering a singleplayer world, the mod merges world language files for the current language and `en_us`.
+- If `amagari_translation_tool/lang` does not exist yet, the mod creates it the first time it checks world language files.
 - After joining a remote server or a singleplayer world opened to LAN, if both the server/host and client have this mod installed, the server first sends a manifest for `en_us` and the player's current client language. The client downloads compressed language data only when its local cache is missing or the hash changed.
 - When a singleplayer world is opened to LAN, the host player still reads local world files directly; joining LAN players use manifest/cache downloads.
 - World language files are applied as the final override layer, above vanilla and enabled resource-pack translations.
 - A language can be split across multiple files, such as `zh_cn.items.json` and `zh_cn.ui.json`; matching files are loaded in filename order.
-- After editing singleplayer files, run `/amagari_lang reload` on the client to reload them, or `/amagari_lang status` to inspect the latest load result.
+- After editing singleplayer files, run `/amagari_lang reload` to reload them, or `/amagari_lang status` to inspect the latest load result. These commands report from the client and should not trigger a server-side parse error.
 - After editing remote server files, an operator can run `/amagari_lang push` to publish a new manifest. Online clients automatically request language data whose hash changed.
 - Players can also run `/amagari_lang pull` to request a fresh manifest for their own language.
+- Run `/amagari_lang help` to show a short description of every subcommand.
+- `/amagari_lang` command feedback is visible only to the player who ran the command. Chinese clients receive Chinese feedback; other languages default to English.
 - Remote servers and LAN hosts provide `en_us` plus each joining player's current client language on demand. If a player changes language after joining, reconnect or run `/amagari_lang pull`.
 - The client cache lives under `.minecraft/amagari_translation_tool/lang_cache`, partitioned by a hash of the server address and storing gzip-compressed data.
 - A single remote language data payload is capped at 4 MiB. Large maps should keep language files scoped to the languages and namespaces they actually use.

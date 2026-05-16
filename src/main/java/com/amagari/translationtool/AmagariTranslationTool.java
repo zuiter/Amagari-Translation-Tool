@@ -1,6 +1,7 @@
 package com.amagari.translationtool;
 
 import com.amagari.translationtool.network.WorldLanguageDataPayload;
+import com.amagari.translationtool.network.WorldLanguageCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
 import com.amagari.translationtool.network.WorldLanguageRequestPayload;
 import com.amagari.translationtool.server.WorldLanguageServer;
@@ -17,6 +18,7 @@ public class AmagariTranslationTool implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		PayloadTypeRegistry.clientboundPlay().register(WorldLanguageManifestPayload.TYPE, WorldLanguageManifestPayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(WorldLanguageCommandPayload.TYPE, WorldLanguageCommandPayload.CODEC);
 		PayloadTypeRegistry.serverboundPlay().register(WorldLanguageRequestPayload.TYPE, WorldLanguageRequestPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().registerLarge(WorldLanguageDataPayload.TYPE, WorldLanguageDataPayload.CODEC, WORLD_LANGUAGE_SYNC_MAX_BYTES);
 		WorldLanguageServer.register();

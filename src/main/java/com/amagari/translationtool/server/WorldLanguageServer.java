@@ -1,10 +1,12 @@
 package com.amagari.translationtool.server;
 
 import com.amagari.translationtool.AmagariTranslationTool;
+import com.amagari.translationtool.network.WorldLanguageCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageDataPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
 import com.amagari.translationtool.network.WorldLanguageRequestPayload;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
+import com.amagari.translationtool.translation.WorldLanguageMessages;
 import com.amagari.translationtool.translation.WorldLanguageTransfer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -28,15 +30,38 @@ public final class WorldLanguageServer {
 		ServerPlayNetworking.registerGlobalReceiver(WorldLanguageRequestPayload.TYPE, (payload, context) -> sendRequestedLanguages(context.player(), context.server(), payload));
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(
 				Commands.literal("amagari_lang")
+						.then(Commands.literal("help").executes(context -> {
+							WorldLanguageMessages.help(language(context.getSource().getPlayer()))
+									.forEach(line -> context.getSource().sendSystemMessage(Component.literal(line)));
+							return 1;
+						}))
+						.then(Commands.literal("reload").executes(context -> {
+							ServerPlayer player = context.getSource().getPlayerOrException();
+							if (!ServerPlayNetworking.canSend(player, WorldLanguageCommandPayload.TYPE)) {
+								context.getSource().sendFailure(Component.literal(WorldLanguageMessages.unsupportedClient(language(player))));
+								return 0;
+							}
+							ServerPlayNetworking.send(player, new WorldLanguageCommandPayload(WorldLanguageCommandPayload.Action.RELOAD));
+							return 1;
+						}))
+						.then(Commands.literal("status").executes(context -> {
+							ServerPlayer player = context.getSource().getPlayerOrException();
+							if (!ServerPlayNetworking.canSend(player, WorldLanguageCommandPayload.TYPE)) {
+								context.getSource().sendFailure(Component.literal(WorldLanguageMessages.unsupportedClient(language(player))));
+								return 0;
+							}
+							ServerPlayNetworking.send(player, new WorldLanguageCommandPayload(WorldLanguageCommandPayload.Action.STATUS));
+							return 1;
+						}))
 						.then(Commands.literal("pull").executes(context -> {
 							ServerPlayer player = context.getSource().getPlayerOrException();
 							boolean sent = sendManifest(player, context.getSource().getServer());
-							context.getSource().sendSuccess(() -> Component.literal(sent ? "Requested latest world language manifest." : "No world language manifest was sent."), false);
+							context.getSource().sendSuccess(() -> Component.literal(WorldLanguageMessages.requestedManifest(sent, language(player))), false);
 							return sent ? 1 : 0;
 						}))
 						.then(Commands.literal("push").requires(Commands.hasPermission(Commands.LEVEL_ADMINS)).executes(context -> {
 							int playerCount = sendManifestToAll(context.getSource().getServer());
-							context.getSource().sendSuccess(() -> Component.literal("Published world language manifest to " + playerCount + " player(s)."), true);
+							context.getSource().sendSuccess(() -> Component.literal(WorldLanguageMessages.publishedManifest(playerCount, language(context.getSource().getPlayer()))), false);
 							return playerCount;
 						}))
 		));
@@ -108,6 +133,10 @@ public final class WorldLanguageServer {
 
 	private static boolean shouldUseLocalWorldFiles(ServerPlayer player, MinecraftServer server) {
 		return server.isSingleplayer() && server.isSingleplayerOwner(player.nameAndId());
+	}
+
+	private static String language(ServerPlayer player) {
+		return player == null ? "en_us" : player.clientInformation().language();
 	}
 
 	private static PreparedWorldLanguages prepareWorldLanguages(MinecraftServer server, ServerPlayer player) {
