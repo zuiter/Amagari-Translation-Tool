@@ -53,7 +53,7 @@ public final class WorldLanguageServer {
 	}
 
 	private static boolean sendManifest(ServerPlayer player, MinecraftServer server) {
-		if (!canSync(player) || server.isSingleplayer()) {
+		if (!canSync(player) || shouldUseLocalWorldFiles(player, server)) {
 			return false;
 		}
 
@@ -70,7 +70,7 @@ public final class WorldLanguageServer {
 	}
 
 	private static void sendRequestedLanguages(ServerPlayer player, MinecraftServer server, WorldLanguageRequestPayload payload) {
-		if (!canSync(player) || server.isSingleplayer()) {
+		if (!canSync(player) || shouldUseLocalWorldFiles(player, server)) {
 			return;
 		}
 
@@ -104,6 +104,10 @@ public final class WorldLanguageServer {
 	private static boolean canSync(ServerPlayer player) {
 		return ServerPlayNetworking.canSend(player, WorldLanguageManifestPayload.TYPE)
 				&& ServerPlayNetworking.canSend(player, WorldLanguageDataPayload.TYPE);
+	}
+
+	private static boolean shouldUseLocalWorldFiles(ServerPlayer player, MinecraftServer server) {
+		return server.isSingleplayer() && server.isSingleplayerOwner(player.nameAndId());
 	}
 
 	private static PreparedWorldLanguages prepareWorldLanguages(MinecraftServer server, ServerPlayer player) {

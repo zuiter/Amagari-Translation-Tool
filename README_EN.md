@@ -13,7 +13,7 @@ Amagari Translation Tool is a Fabric translation helper mod for Minecraft 26.1.2
 
 ## Current Status
 
-The project currently supports loading language files from a world directory into the client language table when entering singleplayer worlds or joining remote servers, without enabling a separate resource pack.
+The project currently supports loading language files from a world directory into the client language table when entering singleplayer worlds, joining remote servers, or joining singleplayer worlds opened to LAN, without enabling a separate resource pack.
 
 ## World Language Files
 
@@ -38,13 +38,14 @@ The file format matches resource-pack language files at `assets/<namespace>/lang
 Loading rules:
 
 - After entering a singleplayer world, the mod merges world language files for the current language and `en_us`.
-- After joining a remote server, if both the server and client have this mod installed, the server first sends a manifest for `en_us` and the player's current client language. The client downloads compressed language data only when its local cache is missing or the hash changed.
+- After joining a remote server or a singleplayer world opened to LAN, if both the server/host and client have this mod installed, the server first sends a manifest for `en_us` and the player's current client language. The client downloads compressed language data only when its local cache is missing or the hash changed.
+- When a singleplayer world is opened to LAN, the host player still reads local world files directly; joining LAN players use manifest/cache downloads.
 - World language files are applied as the final override layer, above vanilla and enabled resource-pack translations.
 - A language can be split across multiple files, such as `zh_cn.items.json` and `zh_cn.ui.json`; matching files are loaded in filename order.
 - After editing singleplayer files, run `/amagari_lang reload` on the client to reload them, or `/amagari_lang status` to inspect the latest load result.
 - After editing remote server files, an operator can run `/amagari_lang push` to publish a new manifest. Online clients automatically request language data whose hash changed.
 - Players can also run `/amagari_lang pull` to request a fresh manifest for their own language.
-- Remote servers provide `en_us` plus each player's current client language on demand. If a player changes language after joining, reconnect or run `/amagari_lang pull`.
+- Remote servers and LAN hosts provide `en_us` plus each joining player's current client language on demand. If a player changes language after joining, reconnect or run `/amagari_lang pull`.
 - The client cache lives under `.minecraft/amagari_translation_tool/lang_cache`, partitioned by a hash of the server address and storing gzip-compressed data.
 - A single remote language data payload is capped at 4 MiB. Large maps should keep language files scoped to the languages and namespaces they actually use.
 

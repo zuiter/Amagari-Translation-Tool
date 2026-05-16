@@ -58,4 +58,16 @@ Use this checklist when manually testing remote server language delivery:
 - Change the client's language, reconnect or run `/amagari_lang pull`, and confirm the server offers the newly selected language plus `en_us`.
 - Add a malformed JSON file on the server and confirm the server logs/skips it while still sending valid files.
 
-Do not mark remote server sync as manually tested unless an actual dedicated or LAN server/client pair was used.
+## Open To LAN Language Sync Checklist
+
+Use this checklist when manually testing a singleplayer world opened to LAN:
+
+- Install the mod on the host client and the joining LAN client.
+- Create `saves/<world>/amagari_translation_tool/lang/en_us.json` and `saves/<world>/amagari_translation_tool/lang/<joining_client_language>.json` on the host world with known vanilla translation key overrides.
+- Open the singleplayer world to LAN and join from another client.
+- Confirm the host still reads local world language files directly.
+- Confirm the joining LAN client receives the language manifest, downloads missing cached data, and shows the overridden text without enabling a resource pack.
+- Run `/amagari_lang pull` from the joining LAN client and confirm it can request a fresh manifest from the host.
+- Edit a host-side language file, run `/amagari_lang push` as the host/operator, and confirm the joining LAN client receives only changed language data.
+
+Do not mark remote or LAN sync as manually tested unless an actual dedicated server or LAN host/client pair was used.
