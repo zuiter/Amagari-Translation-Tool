@@ -49,7 +49,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 - 执行 `/amagari_lang help` 可查看所有子命令的简短说明。
 - `/amagari_lang` 命令反馈只会发送给执行者本人；客户端语言为中文时显示中文反馈，其他语言默认显示英文反馈。
 - 远程服务器和开放到局域网的主机为每名加入者按需提供 `en_us` 和其当前客户端语言；玩家切换语言后可重新加入服务器，或执行 `/amagari_lang pull`。
-- 客户端缓存位于 `.minecraft/amagari_translation_tool/lang_cache`，按服务器地址 hash 分目录保存 gzip 压缩数据。
+- 客户端缓存位于 `.minecraft/amagari_translation_tool/lang_cache`，按服务器地址 hash 分目录保存 gzip 压缩数据；命中缓存或写入新缓存时会刷新使用时间，7 天未使用的缓存会自动删除，同一服务器同一语言最多保留最近 2 个 hash。
 - 单个远程语言数据 payload 上限为 4 MiB；大型地图建议按实际使用语言和命名空间控制语言文件规模。
 
 ## 构建

@@ -56,6 +56,8 @@ Use this checklist when manually testing remote server language delivery:
 - Run `/amagari_lang status` on the client and confirm it reports remote world language entries.
 - Confirm `.minecraft/amagari_translation_tool/lang_cache` contains cached language data after the first download.
 - Rejoin the same server without changing files and confirm `/amagari_lang status` reports cached manifest handling without requiring a fresh data download.
+- Create or age old cache files in `.minecraft/amagari_translation_tool/lang_cache`, then trigger a manifest load/download and confirm files unused for more than 7 days are removed.
+- Create more than two cached hashes for the same server/language, then trigger a manifest load/download and confirm only the two most recently used hashes remain.
 - Edit a server-side language file, run `/amagari_lang push` as an operator, and confirm the connected client requests and receives only the changed language data.
 - Run `/amagari_lang pull` as a normal player and confirm the server publishes a fresh manifest for that player.
 - Confirm `/amagari_lang pull` and `/amagari_lang push` feedback is visible only to the executing player and follows that player's client language.
