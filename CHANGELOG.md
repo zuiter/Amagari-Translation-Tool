@@ -10,6 +10,11 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 - 客户端远程语言缓存会自动清理：7 天未使用的缓存文件会被删除，同一服务器同一语言最多保留最近 2 个 hash。
 
+### 变更
+
+- 新增面向 Minecraft 1.21.4 Fabric 的适配分支：构建目标改为 Java 21，依赖更新为 Fabric API 0.119.4+1.21.4、Fabric Loader 0.19.2，并同步 1.21.4 的 Fabric 网络 payload、命令和客户端 mixin API。
+- 远程语言数据改为分片发送：单个语言保留 4 MiB 压缩数据总上限，但每个网络 payload 最多发送 512 KiB，以适配 Minecraft 1.21.4 的普通自定义 payload 注册方式。
+
 ## [0.0.1] - 2026-05-17
 
 ### 新增

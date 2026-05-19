@@ -1,7 +1,6 @@
 package com.amagari.translationtool.client;
 
 import com.amagari.translationtool.AmagariTranslationTool;
-import com.amagari.translationtool.network.WorldLanguageDataPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
 import com.amagari.translationtool.translation.WorldLanguageTransfer;
 import net.minecraft.client.Minecraft;
@@ -67,17 +66,17 @@ public final class WorldLanguageCache {
 		return new CacheLookup(cachedTranslations, missingLanguages);
 	}
 
-	public static Map<String, String> store(Minecraft client, String serverKey, WorldLanguageDataPayload payload) throws IOException {
+	public static Map<String, String> store(Minecraft client, String serverKey, String languageCode, String hash, int uncompressedBytes, byte[] compressedData) throws IOException {
 		Map<String, String> translations = WorldLanguageTransfer.decodeCompressed(
-				payload.compressedData(),
-				payload.uncompressedBytes(),
-				payload.hash()
+				compressedData,
+				uncompressedBytes,
+				hash
 		);
 
 		Path serverCacheDirectory = serverCacheDirectory(client, serverKey);
 		Files.createDirectories(serverCacheDirectory);
-		Path cacheFile = cacheFile(serverCacheDirectory, payload.languageCode(), payload.hash());
-		Files.write(cacheFile, payload.compressedData());
+		Path cacheFile = cacheFile(serverCacheDirectory, languageCode, hash);
+		Files.write(cacheFile, compressedData);
 		markUsed(cacheFile);
 		cleanupCache(client);
 		return translations;

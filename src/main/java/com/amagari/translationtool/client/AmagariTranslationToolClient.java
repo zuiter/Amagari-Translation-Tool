@@ -28,8 +28,9 @@ public class AmagariTranslationToolClient implements ClientModInitializer {
 			WorldLanguageClient.reloadLanguage(context.client());
 		}));
 		ClientPlayNetworking.registerGlobalReceiver(WorldLanguageDataPayload.TYPE, (payload, context) -> context.client().execute(() -> {
-			WorldLanguageContext.receiveRemoteLanguageData(context.client(), payload);
-			WorldLanguageClient.reloadLanguage(context.client());
+			if (WorldLanguageContext.receiveRemoteLanguageData(context.client(), payload)) {
+				WorldLanguageClient.reloadLanguage(context.client());
+			}
 		}));
 		ClientPlayNetworking.registerGlobalReceiver(WorldLanguageCommandPayload.TYPE, (payload, context) -> context.client().execute(() -> handleServerCommand(payload, context.client())));
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WorldLanguageContext.leaveWorld());
@@ -45,7 +46,7 @@ public class AmagariTranslationToolClient implements ClientModInitializer {
 
 	private static void sendCommandFeedback(Minecraft client) {
 		if (client.player != null) {
-			client.player.sendSystemMessage(Component.literal(WorldLanguageContext.describeLastReport(client.getLanguageManager().getSelected())));
+			client.player.displayClientMessage(Component.literal(WorldLanguageContext.describeLastReport(client.getLanguageManager().getSelected())), false);
 		}
 	}
 }

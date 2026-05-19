@@ -4,11 +4,11 @@ import com.amagari.translationtool.AmagariTranslationTool;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public record WorldLanguageCommandPayload(Action action) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<WorldLanguageCommandPayload> TYPE = new CustomPacketPayload.Type<>(
-			Identifier.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_command")
+			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_command")
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageCommandPayload> CODEC = StreamCodec.ofMember(
 			WorldLanguageCommandPayload::write,
