@@ -111,13 +111,7 @@ public final class WorldLanguageServer {
 				continue;
 			}
 
-			ServerPlayNetworking.send(player, new WorldLanguageDataPayload(
-					language.languageCode(),
-					language.hash(),
-					language.uncompressedBytes(),
-					language.entries(),
-					language.compressedData()
-			));
+			WorldLanguageDataPayload.chunks(language).forEach(dataPayload -> ServerPlayNetworking.send(player, dataPayload));
 			sentLanguages++;
 		}
 
@@ -152,6 +146,10 @@ public final class WorldLanguageServer {
 		for (Map.Entry<String, Map<String, String>> language : filteredCollection.translationsByLanguage().entrySet()) {
 			try {
 				WorldLanguageTransfer.PreparedLanguage preparedLanguage = WorldLanguageTransfer.prepare(language.getKey(), language.getValue());
+				if (preparedLanguage.compressedData().length > WorldLanguageDataPayload.MAX_TOTAL_COMPRESSED_BYTES) {
+					AmagariTranslationTool.LOGGER.warn("Skipped world language {} for {} because compressed data is too large: {} bytes", language.getKey(), player.getName().getString(), preparedLanguage.compressedData().length);
+					continue;
+				}
 				preparedLanguages.put(language.getKey(), preparedLanguage);
 				manifest.put(language.getKey(), new WorldLanguageManifestPayload.LanguageManifestEntry(
 						preparedLanguage.hash(),

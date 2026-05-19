@@ -79,7 +79,7 @@ public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> la
 			if (entry.uncompressedBytes() < 0 || entry.uncompressedBytes() > WorldLanguageTransfer.MAX_UNCOMPRESSED_BYTES) {
 				throw new IllegalArgumentException("Invalid world language uncompressed size: " + entry.uncompressedBytes());
 			}
-			if (entry.compressedBytes() < 0) {
+			if (entry.compressedBytes() < 0 || entry.compressedBytes() > WorldLanguageDataPayload.MAX_TOTAL_COMPRESSED_BYTES) {
 				throw new IllegalArgumentException("Invalid world language compressed size: " + entry.compressedBytes());
 			}
 			if (entry.entries() < 0 || entry.entries() > WorldLanguageTransfer.MAX_ENTRIES_PER_LANGUAGE) {
