@@ -1,15 +1,15 @@
 # Amagari Translation Tool
 
-Amagari Translation Tool is a Fabric translation helper mod for Minecraft 26.1.2.
+Amagari Translation Tool is a Fabric translation helper mod for Minecraft 1.21.10.
 
 中文说明见 [README.md](README.md)。
 
 ## Requirements
 
-- Minecraft 26.1.2
+- Minecraft 1.21.10
 - Fabric Loader 0.19.2 or newer
-- Fabric API
-- Java 25
+- Fabric API 0.138.4+1.21.10 or compatible
+- Java 21
 
 ## Current Status
 
@@ -50,12 +50,12 @@ Loading rules:
 - `/amagari_lang` command feedback is visible only to the player who ran the command. Chinese clients receive Chinese feedback; other languages default to English.
 - Remote servers and LAN hosts provide `en_us` plus each joining player's current client language on demand. If a player changes language after joining, reconnect or run `/amagari_lang pull`.
 - The client cache lives under `.minecraft/amagari_translation_tool/lang_cache`, partitioned by a hash of the server address and storing gzip-compressed data. Cache hits and new downloads refresh the last-used timestamp; entries unused for 7 days are deleted automatically, and each server/language pair keeps at most the 2 most recent hashes.
-- A single remote language data payload is capped at 4 MiB. Large maps should keep language files scoped to the languages and namespaces they actually use.
+- A single remote language's compressed data is capped at 4 MiB and sent in chunks of at most 512 KiB. Large maps should keep language files scoped to the languages and namespaces they actually use.
 
 ## Build
 
 ```powershell
-.\gradlew-java25.bat build --stacktrace
+.\gradlew.bat build --stacktrace
 ```
 
 The generated jar will be under `build/libs`.

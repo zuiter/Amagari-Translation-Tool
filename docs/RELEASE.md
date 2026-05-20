@@ -24,7 +24,7 @@ Minecraft 兼容范围不要写进 `mod_version`，继续由 `minecraft_dependen
 公开下载的 jar 文件名会保留 Minecraft 和加载器信息，例如：
 
 ```text
-amagari-translation-tool-mc26.1.2-fabric-0.2.0.jar
+amagari-translation-tool-mc1.21.10-fabric-0.2.0.jar
 ```
 
 ## 发布前检查
@@ -46,13 +46,13 @@ mod_version=0.2.0
 
 ```powershell
 git diff --check
-.\gradlew-java25.bat build --stacktrace
+.\gradlew.bat build --stacktrace
 ```
 
 5. 检查产物：
 
 ```text
-build/libs/amagari-translation-tool-mc26.1.2-fabric-<version>.jar
+build/libs/amagari-translation-tool-mc1.21.10-fabric-<version>.jar
 ```
 
 ## GitHub 发布
@@ -72,7 +72,7 @@ git push --tags
 - Tag: `v<version>`
 - Title: `Amagari Translation Tool <version>`
 - Notes: 使用 `CHANGELOG.md` 对应版本内容
-- Artifact: 上传 `build/libs/amagari-translation-tool-mc26.1.2-fabric-<version>.jar`
+- Artifact: 上传 `build/libs/amagari-translation-tool-mc1.21.10-fabric-<version>.jar`
 
 ## CI
 

@@ -5,14 +5,14 @@ import com.amagari.translationtool.translation.WorldLanguageTransfer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> languages) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<WorldLanguageManifestPayload> TYPE = new CustomPacketPayload.Type<>(
-			Identifier.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_manifest")
+			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_manifest")
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageManifestPayload> CODEC = StreamCodec.ofMember(
 			WorldLanguageManifestPayload::write,
@@ -79,7 +79,7 @@ public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> la
 			if (entry.uncompressedBytes() < 0 || entry.uncompressedBytes() > WorldLanguageTransfer.MAX_UNCOMPRESSED_BYTES) {
 				throw new IllegalArgumentException("Invalid world language uncompressed size: " + entry.uncompressedBytes());
 			}
-			if (entry.compressedBytes() < 0) {
+			if (entry.compressedBytes() < 0 || entry.compressedBytes() > WorldLanguageDataPayload.MAX_TOTAL_COMPRESSED_BYTES) {
 				throw new IllegalArgumentException("Invalid world language compressed size: " + entry.compressedBytes());
 			}
 			if (entry.entries() < 0 || entry.entries() > WorldLanguageTransfer.MAX_ENTRIES_PER_LANGUAGE) {

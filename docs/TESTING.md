@@ -8,7 +8,7 @@ Run after normal code changes:
 
 ```powershell
 git diff --check
-.\gradlew-java25.bat build --stacktrace
+.\gradlew.bat build --stacktrace
 ```
 
 This proves formatting and compilation, not multiplayer runtime behavior.
@@ -20,14 +20,14 @@ Only launch Minecraft clients when explicitly requested.
 Example command when manual client testing is requested:
 
 ```powershell
-.\gradlew-java25.bat runClient
+.\gradlew.bat runClient
 ```
 
 ## Current Scaffold Checklist
 
 Expected after a clean build:
 
-- `build/libs/amagari-translation-tool-mc26.1.2-fabric-<version>.jar` exists.
+- `build/libs/amagari-translation-tool-mc1.21.10-fabric-<version>.jar` exists.
 - `fabric.mod.json` expands `${version}` and `${minecraft_dependency}` during resource processing.
 - The main entrypoint class compiles successfully.
 
@@ -58,6 +58,7 @@ Use this checklist when manually testing remote server language delivery:
 - Rejoin the same server without changing files and confirm `/amagari_lang status` reports cached manifest handling without requiring a fresh data download.
 - Create or age old cache files in `.minecraft/amagari_translation_tool/lang_cache`, then trigger a manifest load/download and confirm files unused for more than 7 days are removed.
 - Create more than two cached hashes for the same server/language, then trigger a manifest load/download and confirm only the two most recently used hashes remain.
+- Create a language file whose compressed transfer data is larger than 512 KiB but below 4 MiB, then confirm it downloads across multiple chunks and loads after all chunks arrive.
 - Edit a server-side language file, run `/amagari_lang push` as an operator, and confirm the connected client requests and receives only the changed language data.
 - Run `/amagari_lang pull` as a normal player and confirm the server publishes a fresh manifest for that player.
 - Confirm `/amagari_lang pull` and `/amagari_lang push` feedback is visible only to the executing player and follows that player's client language.

@@ -13,14 +13,13 @@ import org.slf4j.LoggerFactory;
 public class AmagariTranslationTool implements ModInitializer {
 	public static final String MOD_ID = "amagari_translation_tool";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	private static final int WORLD_LANGUAGE_SYNC_MAX_BYTES = 4 * 1024 * 1024;
 
 	@Override
 	public void onInitialize() {
-		PayloadTypeRegistry.clientboundPlay().register(WorldLanguageManifestPayload.TYPE, WorldLanguageManifestPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().register(WorldLanguageCommandPayload.TYPE, WorldLanguageCommandPayload.CODEC);
-		PayloadTypeRegistry.serverboundPlay().register(WorldLanguageRequestPayload.TYPE, WorldLanguageRequestPayload.CODEC);
-		PayloadTypeRegistry.clientboundPlay().registerLarge(WorldLanguageDataPayload.TYPE, WorldLanguageDataPayload.CODEC, WORLD_LANGUAGE_SYNC_MAX_BYTES);
+		PayloadTypeRegistry.playS2C().register(WorldLanguageManifestPayload.TYPE, WorldLanguageManifestPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(WorldLanguageCommandPayload.TYPE, WorldLanguageCommandPayload.CODEC);
+		PayloadTypeRegistry.playC2S().register(WorldLanguageRequestPayload.TYPE, WorldLanguageRequestPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(WorldLanguageDataPayload.TYPE, WorldLanguageDataPayload.CODEC);
 		WorldLanguageServer.register();
 		LOGGER.info("Amagari Translation Tool initialized");
 	}
