@@ -1,12 +1,12 @@
 # Amagari Translation Tool
 
-Amagari Translation Tool 是一个面向 Minecraft 26.1.2 Fabric 的翻译辅助模组。
+Amagari Translation Tool 是一个面向 Minecraft 26.1 Fabric 的翻译辅助模组。
 
 英文说明见 [README_EN.md](README_EN.md)。
 
 ## 安装要求
 
-- Minecraft 26.1.2
+- Minecraft 26.1
 - Fabric Loader 0.19.2 或更高版本
 - Fabric API
 - Java 25

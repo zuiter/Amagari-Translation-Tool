@@ -1,12 +1,12 @@
 # Amagari Translation Tool
 
-Amagari Translation Tool is a Fabric translation helper mod for Minecraft 26.1.2.
+Amagari Translation Tool is a Fabric translation helper mod for Minecraft 26.1.
 
 中文说明见 [README.md](README.md)。
 
 ## Requirements
 
-- Minecraft 26.1.2
+- Minecraft 26.1
 - Fabric Loader 0.19.2 or newer
 - Fabric API
 - Java 25

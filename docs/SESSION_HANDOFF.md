@@ -30,7 +30,7 @@ git diff --check
 
 - Mod id 使用 `amagari_translation_tool`。
 - 主入口类是 `com.amagari.translationtool.AmagariTranslationTool`。
-- 当前目标为 Minecraft 26.1.2，Fabric API 依赖使用 `0.148.2+26.1.2`。
+- 当前适配分支目标为 Minecraft 26.1，Fabric API 依赖使用 `0.145.1+26.1`。
 - `gradlew-java25.bat` 会优先使用本项目 `.gradle/local-jdks` 下的 Java 25；如果不存在，会复用同级 `mapsociety-template-26.1` 中已下载的 Java 25。
 - 翻译数据、配置、客户端 UI 和网络 payload 应保持边界清晰。
 
