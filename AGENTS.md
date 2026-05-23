@@ -29,14 +29,14 @@ After a feature is implemented:
 1. Self-review the changed code for risk, redundancy, and stale helpers.
 2. Check `README.md`, `README_EN.md`, and `CHANGELOG.md`.
 3. Run `git diff --check`.
-4. Run `.\gradlew.bat build --stacktrace`.
+4. Run `.\gradlew-java21.bat build --stacktrace`.
 5. Stage only files that belong to the completed change when the user has asked to keep git ready.
 
 Use subagents only for narrow, independent review or documentation checks. Close them after completion, failure, or timeout.
 
 ## Verification
 
-- Default build command: `.\gradlew.bat build --stacktrace`.
+- Default build command: `.\gradlew-java21.bat build --stacktrace`.
 - Do not claim runtime behavior was manually tested unless a Minecraft client/server test was actually performed.
 - For multiplayer, translation UI, or client-state features, add or update a short manual test checklist in `docs/TESTING.md`.
 - Command features must include a manual check that the expected feedback appears in chat and no red Brigadier parse error is produced in singleplayer integrated-server worlds.

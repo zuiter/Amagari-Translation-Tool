@@ -7,7 +7,7 @@
 当前项目目录：
 
 ```text
-E:\Minecraft_MOD\mod_init\amagari-translation-tool-26.1.2
+F:\Dev\Minecraft Mods\Amagari Translation Tools\1.21.4
 ```
 
 ## 稳定工作流
@@ -20,7 +20,7 @@ E:\Minecraft_MOD\mod_init\amagari-translation-tool-26.1.2
 
 ```powershell
 git diff --check
-.\gradlew.bat build --stacktrace
+.\gradlew-java21.bat build --stacktrace
 ```
 
 - 完成功能后自查冗余、风险和遗留 helper。
@@ -30,18 +30,19 @@ git diff --check
 
 - Mod id 使用 `amagari_translation_tool`。
 - 主入口类是 `com.amagari.translationtool.AmagariTranslationTool`。
-- 当前适配分支目标为 Minecraft 1.21.4，Fabric API 依赖使用 `0.119.4+1.21.4`，构建目标为 Java 21。
-- 该分支使用 `.\gradlew.bat build --stacktrace` 构建；旧的 26.1.2 版本保留在 `main` 分支。
+- 当前目标为 Minecraft 1.21.4，Fabric API 依赖使用 `0.119.4+1.21.4`。
+- `gradlew-java21.bat` 会优先使用本项目 `.gradle/local-jdks` 下的 Java 21；如果不存在，会复用本机已有的 Java 21。
 - 翻译数据、配置、客户端 UI 和网络 payload 应保持边界清晰。
 
 ## 当前已知状态
 
-- 当前功能包括地图语言文件自动目录创建、单人加载、远程服务器/LAN manifest 同步、客户端缓存清理、`/amagari_lang` 命令和中英文执行者私有反馈。
-- 当前适配分支已同步 1.21.4 的 Fabric 网络 payload、命令和客户端 mixin API。
-- 当前适配分支已通过：
+- 项目是新建的可构建 Fabric 模组骨架，尚未初始化 Git 仓库。
+- 当前尚未实现玩家可见的翻译功能。
+- 当前已同步 MapSociety 风格的开发工作流文档、测试清单、发布流程和 GitHub Actions 构建流程。
+- 该骨架已通过：
 
 ```powershell
-.\gradlew.bat build --stacktrace
+.\gradlew-java21.bat build --stacktrace
 ```
 
 ## 新会话建议开场
@@ -50,7 +51,7 @@ git diff --check
 
 ```text
 请继续 Amagari Translation Tool 项目开发。
-项目路径：E:\Minecraft_MOD\mod_init\amagari-translation-tool-26.1.2
+项目路径：F:\Dev\Minecraft Mods\Amagari Translation Tools\1.21.4
 请先阅读 docs/SESSION_HANDOFF.md 和 AGENTS.md。
 不要自动打开客户端。
 ```

@@ -1,5 +1,9 @@
 # 更新日志
 
+- Fix `/amagari_lang paratranz` project-name completion and suppress the integrated-server parse error for the client-only ParaTranz command.
+- Fix ParaTranz artifact parsing when `/projects/{id}/artifacts` returns a single artifact object instead of an array.
+- Apply ParaTranz `*.world.block.*` entries to matching literal sign lines during client rendering, so fixed `Permafrost-i18n` lobby signs can display their pulled translations without editing the save.
+
 Amagari Translation Tool 的重要更改都会记录在这里。
 
 本项目采用轻量级 Keep a Changelog 风格。尚未发布的改动写入 `[未发布]`，发布版本后再归档到对应版本。
@@ -8,23 +12,18 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ### 新增
 
+- 新增客户端 ParaTranz 拉取：`/amagari_lang paratranz` 可列出 API Token 关联项目，`/amagari_lang paratranz <项目名>` 可导出、下载并应用项目语言 JSON。
+- 新增 `.minecraft/config/amagari_translation_tool.json` 配置文件，包含 `paratranzApiToken` 字段；ParaTranz 下载缓存写入 `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`。
+- `/amagari_lang status` 现在会同时显示地图/远程语言状态和 ParaTranz 最近一次列表、下载、应用或失败状态。
+- 新增轻量级 `runUnitChecks` 验证任务，覆盖 ParaTranz 项目匹配、API JSON 解析、zip 语言识别、坏 JSON 跳过和状态文案。
 - 客户端远程语言缓存会自动清理：7 天未使用的缓存文件会被删除，同一服务器同一语言最多保留最近 2 个 hash。
-
-### 变更
-
-- 新增面向 Minecraft 1.21.4 Fabric 的适配分支：构建目标改为 Java 21，依赖更新为 Fabric API 0.119.4+1.21.4、Fabric Loader 0.19.2，并同步 1.21.4 的 Fabric 网络 payload、命令和客户端 mixin API。
-- 远程语言数据改为分片发送：单个语言保留 4 MiB 压缩数据总上限，但每个网络 payload 最多发送 512 KiB，以适配 Minecraft 1.21.4 的普通自定义 payload 注册方式。
-
-### 修复
-
-- 修复 Minecraft 1.21.4 分支客户端 mixin 配置仍要求 Java 25，导致 Java 21 启动时 Fabric Loader 报错的问题。
 
 ## [0.0.1] - 2026-05-17
 
 ### 新增
 
-- 新建面向 Minecraft 26.1.2 的 Fabric 模组骨架，模组名为 `Amagari Translation Tool`，mod id 为 `amagari_translation_tool`。
-- 新增 Java 25 构建脚本、Gradle/Fabric Loom 配置和基础主入口类。
+- 新建面向 Minecraft 1.21.4 的 Fabric 模组骨架，模组名为 `Amagari Translation Tool`，mod id 为 `amagari_translation_tool`。
+- 新增 Java 21 构建脚本、Gradle/Fabric Loom 配置和基础主入口类。
 - 新增项目工作流文档、测试清单、发布说明和 GitHub Actions 构建流程。
 - 新增单人地图目录语言文件加载：`amagari_translation_tool/lang/<语言>.json` 会在进入地图后合并到客户端语言表，无需启用资源包。
 - 新增远程服务器和开放到局域网单人世界的地图语言文件同步：装有本模组的服务端或主机会在玩家加入时发布 `en_us` 和玩家当前语言的 manifest，客户端按 hash 下载缺失或变更的压缩语言数据，无需资源包。

@@ -25,7 +25,7 @@
 		"amagari_translation_tool.client.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.19.2",
+		"fabricloader": ">=0.16.14",
 		"minecraft": "${minecraft_dependency}",
 		"java": ">=21",
 		"fabric-api": "*"

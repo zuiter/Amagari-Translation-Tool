@@ -1,7 +1,6 @@
 package com.amagari.translationtool.mixin.client;
 
 import com.amagari.translationtool.client.WorldLanguageContext;
-import net.minecraft.client.resources.language.ClientLanguage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -9,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import java.util.List;
 import java.util.Map;
 
-@Mixin(ClientLanguage.class)
+@Mixin(targets = "net.minecraft.client.resources.language.ClientLanguage")
 public class ClientLanguageMixin {
 	@ModifyVariable(
 			method = "loadFrom",

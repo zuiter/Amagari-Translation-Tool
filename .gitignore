@@ -19,7 +19,7 @@ bin/
 run/
 
 # Local/runtime
-.omx/
+logs/
 
 # Java
 hs_err_*.log
