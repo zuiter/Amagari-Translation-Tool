@@ -1,8 +1,12 @@
 package com.amagari.translationtool.translation;
 
+import com.amagari.translationtool.client.paratranz.ParaTranzProject;
+import com.amagari.translationtool.client.paratranz.ParaTranzReport;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public final class WorldLanguageMessages {
 	private WorldLanguageMessages() {
@@ -26,6 +30,8 @@ public final class WorldLanguageMessages {
 					"/amagari_lang help - 显示这份帮助。",
 					"/amagari_lang reload - 重新加载当前地图语言文件。",
 					"/amagari_lang status - 查看最近一次地图语言加载结果。",
+					"/amagari_lang paratranz - 列出当前 API Token 可用的 ParaTranz 项目。",
+					"/amagari_lang paratranz <项目名> - 从 ParaTranz 拉取项目导出并应用。",
 					"/amagari_lang pull - 从服务器请求最新地图语言清单。",
 					"/amagari_lang push - OP 向在线玩家发布最新地图语言清单。"
 			);
@@ -35,9 +41,80 @@ public final class WorldLanguageMessages {
 				"/amagari_lang help - Show this help.",
 				"/amagari_lang reload - Reload current world language files.",
 				"/amagari_lang status - Show the latest world language load result.",
+				"/amagari_lang paratranz - List ParaTranz projects available to the API token.",
+				"/amagari_lang paratranz <project> - Pull and apply a ParaTranz project export.",
 				"/amagari_lang pull - Request the latest world language manifest from the server.",
 				"/amagari_lang push - Publish the latest world language manifest to online players. OP only."
 		);
+	}
+
+	public static String paraTranzProjectList(List<ParaTranzProject> projects, String languageCode) {
+		if (projects.isEmpty()) {
+			return isChinese(languageCode) ? "当前 API Token 没有关联的 ParaTranz 项目。" : "No ParaTranz projects are available to the API token.";
+		}
+
+		String projectList = projects.stream()
+				.map(project -> project.name() + " (" + project.id() + ")")
+				.collect(Collectors.joining(", "));
+		if (isChinese(languageCode)) {
+			return "当前 API Token 可用的 ParaTranz 项目：" + projectList;
+		}
+		return "ParaTranz projects available to the API token: " + projectList;
+	}
+
+	public static String paraTranzProjectNotFound(String query, String languageCode) {
+		if (isChinese(languageCode)) {
+			return "未找到 ParaTranz 项目：" + query;
+		}
+		return "ParaTranz project not found: " + query;
+	}
+
+	public static String paraTranzProjectAmbiguous(String query, List<ParaTranzProject> candidates, String languageCode) {
+		String projectList = candidates.stream()
+				.map(project -> project.name() + " (" + project.id() + ")")
+				.collect(Collectors.joining(", "));
+		if (isChinese(languageCode)) {
+			return "ParaTranz 项目名不唯一：" + query + "。候选：" + projectList;
+		}
+		return "ParaTranz project name is ambiguous: " + query + ". Candidates: " + projectList;
+	}
+
+	public static String paraTranzStatus(ParaTranzReport report, String languageCode) {
+		return switch (report.status()) {
+			case IDLE -> isChinese(languageCode) ? "ParaTranz：尚未拉取项目。" : "ParaTranz: no project has been pulled.";
+			case LISTED -> isChinese(languageCode)
+					? "ParaTranz：已列出 " + report.loadedFiles() + " 个项目。"
+					: "ParaTranz: listed " + report.loadedFiles() + " project(s).";
+			case DOWNLOADING -> isChinese(languageCode)
+					? "ParaTranz：正在拉取 " + report.project().name() + "。"
+					: "ParaTranz: pulling " + report.project().name() + ".";
+			case APPLIED -> paraTranzApplied(report, languageCode);
+			case FAILED -> isChinese(languageCode)
+					? "ParaTranz：失败：" + report.error()
+					: "ParaTranz: failed: " + report.error();
+		};
+	}
+
+	private static String paraTranzApplied(ParaTranzReport report, String languageCode) {
+		String failedMessage = report.failedFiles() == 0 ? "" : failedFiles(report.failedFiles(), languageCode);
+		String languages = String.join(", ", report.languageCodes());
+		if (isChinese(languageCode)) {
+			return "ParaTranz：已应用 " + report.project().name()
+					+ "（项目 " + report.project().id()
+					+ "，成品 " + report.artifact().id()
+					+ "，时间 " + report.artifact().createdAt()
+					+ "），从 " + report.loadedFiles() + " 个文件加载 " + report.loadedEntries()
+					+ " 条翻译，覆盖 " + report.loadedLanguages()
+					+ " 种语言：" + languages + failedMessage + "。";
+		}
+		return "ParaTranz: applied " + report.project().name()
+				+ " (project " + report.project().id()
+				+ ", artifact " + report.artifact().id()
+				+ ", created " + report.artifact().createdAt()
+				+ "), loaded " + report.loadedEntries()
+				+ " translation entries from " + report.loadedFiles()
+				+ " file(s) across " + report.loadedLanguages()
+				+ " language(s): " + languages + failedMessage + ".";
 	}
 
 	public static String requestedManifest(boolean sent, String languageCode) {

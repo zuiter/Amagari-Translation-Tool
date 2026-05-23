@@ -8,6 +8,7 @@ import com.amagari.translationtool.network.WorldLanguageRequestPayload;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
 import com.amagari.translationtool.translation.WorldLanguageMessages;
 import com.amagari.translationtool.translation.WorldLanguageTransfer;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -64,7 +65,19 @@ public final class WorldLanguageServer {
 							context.getSource().sendSuccess(() -> Component.literal(WorldLanguageMessages.publishedManifest(playerCount, language(context.getSource().getPlayer()))), false);
 							return playerCount;
 						}))
+						.then(Commands.literal("paratranz")
+								.executes(context -> handleClientOnlyParaTranz(context.getSource().getPlayerOrException()))
+								.then(Commands.argument("projectName", StringArgumentType.greedyString())
+										.executes(context -> handleClientOnlyParaTranz(context.getSource().getPlayerOrException()))))
 		));
+	}
+
+	private static int handleClientOnlyParaTranz(ServerPlayer player) {
+		if (ServerPlayNetworking.canSend(player, WorldLanguageCommandPayload.TYPE)) {
+			return 1;
+		}
+		player.sendSystemMessage(Component.literal(WorldLanguageMessages.unsupportedClient(language(player))));
+		return 0;
 	}
 
 	private static int sendManifestToAll(MinecraftServer server) {

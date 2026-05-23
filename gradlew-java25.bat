@@ -1,9 +1,18 @@
 @echo off
 set "PROJECT_ROOT=%~dp0"
+set "ORIGINAL_JAVA_HOME=%JAVA_HOME%"
 set "JAVA_HOME=%PROJECT_ROOT%.gradle\local-jdks\microsoft-jdk-25\jdk-25.0.2+10"
 
 if not exist "%JAVA_HOME%\bin\java.exe" (
   set "JAVA_HOME=%PROJECT_ROOT%..\mapsociety-template-26.1\.gradle\local-jdks\microsoft-jdk-25\jdk-25.0.2+10"
+)
+
+if not exist "%JAVA_HOME%\bin\java.exe" if exist "%ORIGINAL_JAVA_HOME%\bin\java.exe" (
+  set "JAVA_HOME=%ORIGINAL_JAVA_HOME%"
+)
+
+if not exist "%JAVA_HOME%\bin\java.exe" if exist "F:\Dev\Java\jdk-25.0.2\bin\java.exe" (
+  set "JAVA_HOME=F:\Dev\Java\jdk-25.0.2"
 )
 
 if not exist "%JAVA_HOME%\bin\java.exe" (
