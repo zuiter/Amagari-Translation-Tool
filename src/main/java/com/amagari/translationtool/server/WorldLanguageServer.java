@@ -28,7 +28,10 @@ public final class WorldLanguageServer {
 
 	public static void register() {
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendManifest(handler.player, server));
-		ServerPlayNetworking.registerGlobalReceiver(WorldLanguageRequestPayload.TYPE, (payload, context) -> sendRequestedLanguages(context.player(), context.server(), payload));
+		ServerPlayNetworking.registerGlobalReceiver(WorldLanguageRequestPayload.TYPE, (server, player, handler, buffer, responseSender) -> {
+			WorldLanguageRequestPayload payload = WorldLanguageRequestPayload.read(buffer);
+			server.execute(() -> sendRequestedLanguages(player, server, payload));
+		});
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> dispatcher.register(
 				Commands.literal("amagari_lang")
 						.then(Commands.literal("help").executes(context -> {
@@ -42,7 +45,7 @@ public final class WorldLanguageServer {
 								context.getSource().sendFailure(Component.literal(WorldLanguageMessages.unsupportedClient(language(player))));
 								return 0;
 							}
-							ServerPlayNetworking.send(player, new WorldLanguageCommandPayload(WorldLanguageCommandPayload.Action.RELOAD));
+							ServerPlayNetworking.send(player, WorldLanguageCommandPayload.TYPE, new WorldLanguageCommandPayload(WorldLanguageCommandPayload.Action.RELOAD).toBuffer());
 							return 1;
 						}))
 						.then(Commands.literal("status").executes(context -> {
@@ -51,7 +54,7 @@ public final class WorldLanguageServer {
 								context.getSource().sendFailure(Component.literal(WorldLanguageMessages.unsupportedClient(language(player))));
 								return 0;
 							}
-							ServerPlayNetworking.send(player, new WorldLanguageCommandPayload(WorldLanguageCommandPayload.Action.STATUS));
+							ServerPlayNetworking.send(player, WorldLanguageCommandPayload.TYPE, new WorldLanguageCommandPayload(WorldLanguageCommandPayload.Action.STATUS).toBuffer());
 							return 1;
 						}))
 						.then(Commands.literal("pull").executes(context -> {
@@ -100,7 +103,8 @@ public final class WorldLanguageServer {
 			return false;
 		}
 
-		ServerPlayNetworking.send(player, new WorldLanguageManifestPayload(languages.manifest()));
+		WorldLanguageManifestPayload payload = new WorldLanguageManifestPayload(languages.manifest());
+		ServerPlayNetworking.send(player, WorldLanguageManifestPayload.TYPE, payload.toBuffer());
 		if (!languages.manifest().isEmpty()) {
 			AmagariTranslationTool.LOGGER.info("Published {} world language manifest entries to {}", languages.manifest().size(), player.getName().getString());
 		}
@@ -124,13 +128,14 @@ public final class WorldLanguageServer {
 				continue;
 			}
 
-			ServerPlayNetworking.send(player, new WorldLanguageDataPayload(
+			WorldLanguageDataPayload dataPayload = new WorldLanguageDataPayload(
 					language.languageCode(),
 					language.hash(),
 					language.uncompressedBytes(),
 					language.entries(),
 					language.compressedData()
-			));
+			);
+			ServerPlayNetworking.send(player, WorldLanguageDataPayload.TYPE, dataPayload.toBuffer());
 			sentLanguages++;
 		}
 
@@ -149,7 +154,7 @@ public final class WorldLanguageServer {
 	}
 
 	private static String language(ServerPlayer player) {
-		return player == null ? "en_us" : player.clientInformation().language();
+		return "en_us";
 	}
 
 	private static PreparedWorldLanguages prepareWorldLanguages(MinecraftServer server, ServerPlayer player) {
@@ -159,7 +164,7 @@ public final class WorldLanguageServer {
 			return null;
 		}
 
-		WorldLanguageFiles.WorldLanguageCollection filteredCollection = collection.filterFor(player.clientInformation().language());
+		WorldLanguageFiles.WorldLanguageCollection filteredCollection = collection.filterFor(language(player));
 		Map<String, WorldLanguageTransfer.PreparedLanguage> preparedLanguages = new LinkedHashMap<>();
 		Map<String, WorldLanguageManifestPayload.LanguageManifestEntry> manifest = new LinkedHashMap<>();
 		for (Map.Entry<String, Map<String, String>> language : filteredCollection.translationsByLanguage().entrySet()) {

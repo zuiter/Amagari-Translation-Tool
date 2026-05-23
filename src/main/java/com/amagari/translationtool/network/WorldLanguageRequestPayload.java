@@ -1,22 +1,15 @@
 package com.amagari.translationtool.network;
 
 import com.amagari.translationtool.AmagariTranslationTool;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record WorldLanguageRequestPayload(List<LanguageRequest> languages) implements CustomPacketPayload {
-	public static final CustomPacketPayload.Type<WorldLanguageRequestPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_request")
-	);
-	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageRequestPayload> CODEC = StreamCodec.ofMember(
-			WorldLanguageRequestPayload::write,
-			WorldLanguageRequestPayload::read
-	);
+public record WorldLanguageRequestPayload(List<LanguageRequest> languages) {
+	public static final ResourceLocation TYPE = new ResourceLocation(AmagariTranslationTool.MOD_ID, "world_language_request");
 
 	private static final int MAX_LANGUAGES = 128;
 	private static final int MAX_HASH_LENGTH = 128;
@@ -25,12 +18,13 @@ public record WorldLanguageRequestPayload(List<LanguageRequest> languages) imple
 		languages = List.copyOf(languages);
 	}
 
-	@Override
-	public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
-		return TYPE;
+	public FriendlyByteBuf toBuffer() {
+		FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+		write(buffer);
+		return buffer;
 	}
 
-	private void write(RegistryFriendlyByteBuf buffer) {
+	private void write(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(languages.size());
 		for (LanguageRequest language : languages) {
 			buffer.writeUtf(language.languageCode());
@@ -38,7 +32,7 @@ public record WorldLanguageRequestPayload(List<LanguageRequest> languages) imple
 		}
 	}
 
-	private static WorldLanguageRequestPayload read(RegistryFriendlyByteBuf buffer) {
+	public static WorldLanguageRequestPayload read(FriendlyByteBuf buffer) {
 		int languageCount = buffer.readVarInt();
 		validateCount(languageCount, MAX_LANGUAGES, "languages");
 

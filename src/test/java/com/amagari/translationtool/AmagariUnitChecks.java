@@ -105,9 +105,9 @@ public final class AmagariUnitChecks {
 		List<ParaTranzProject> projects = ParaTranzJson.parseProjects(json);
 
 		check(projects.size() == 1, "expected one parsed project");
-		check(projects.getFirst().id() == 19173, "expected parsed project id");
-		check(projects.getFirst().permission() == 3, "expected membership permission");
-		check("mc".equals(projects.getFirst().game()), "expected game code");
+		check(projects.get(0).id() == 19173, "expected parsed project id");
+		check(projects.get(0).permission() == 3, "expected membership permission");
+		check("mc".equals(projects.get(0).game()), "expected game code");
 	}
 
 	private static void parsesParaTranzArtifacts() {
@@ -127,9 +127,9 @@ public final class AmagariUnitChecks {
 		List<ParaTranzArtifact> artifacts = ParaTranzJson.parseArtifacts(json);
 
 		check(artifacts.size() == 1, "expected one parsed artifact");
-		check(artifacts.getFirst().id() == 1605565, "expected parsed artifact id");
-		check(artifacts.getFirst().projectId() == 19173, "expected parsed artifact project id");
-		check(artifacts.getFirst().createdAt().equals(Instant.parse("2026-05-23T14:02:20.031Z")), "expected parsed createdAt");
+		check(artifacts.get(0).id() == 1605565, "expected parsed artifact id");
+		check(artifacts.get(0).projectId() == 19173, "expected parsed artifact project id");
+		check(artifacts.get(0).createdAt().equals(Instant.parse("2026-05-23T14:02:20.031Z")), "expected parsed createdAt");
 	}
 
 	private static void parsesSingleParaTranzArtifactObject() {
@@ -147,8 +147,8 @@ public final class AmagariUnitChecks {
 		List<ParaTranzArtifact> artifacts = ParaTranzJson.parseArtifacts(json);
 
 		check(artifacts.size() == 1, "expected one parsed artifact from object response");
-		check(artifacts.getFirst().id() == 1605721, "expected parsed single-object artifact id");
-		check(artifacts.getFirst().projectId() == 19173, "expected parsed single-object project id");
+		check(artifacts.get(0).id() == 1605721, "expected parsed single-object artifact id");
+		check(artifacts.get(0).projectId() == 19173, "expected parsed single-object project id");
 	}
 
 	private static void defaultConfigStartsBlank() {

@@ -2,9 +2,8 @@ package com.amagari.translationtool.network;
 
 import com.amagari.translationtool.AmagariTranslationTool;
 import com.amagari.translationtool.translation.WorldLanguageTransfer;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Arrays;
@@ -15,15 +14,8 @@ public record WorldLanguageDataPayload(
 		int uncompressedBytes,
 		int entries,
 		byte[] compressedData
-) implements CustomPacketPayload {
-	public static final CustomPacketPayload.Type<WorldLanguageDataPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_data")
-	);
-	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageDataPayload> CODEC = StreamCodec.ofMember(
-			WorldLanguageDataPayload::write,
-			WorldLanguageDataPayload::read
-	);
-
+) {
+	public static final ResourceLocation TYPE = new ResourceLocation(AmagariTranslationTool.MOD_ID, "world_language_data");
 	private static final int MAX_HASH_LENGTH = 128;
 	private static final int MAX_COMPRESSED_BYTES = 4 * 1024 * 1024;
 
@@ -31,9 +23,10 @@ public record WorldLanguageDataPayload(
 		compressedData = Arrays.copyOf(compressedData, compressedData.length);
 	}
 
-	@Override
-	public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
-		return TYPE;
+	public FriendlyByteBuf toBuffer() {
+		FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+		write(buffer);
+		return buffer;
 	}
 
 	@Override
@@ -41,7 +34,7 @@ public record WorldLanguageDataPayload(
 		return Arrays.copyOf(compressedData, compressedData.length);
 	}
 
-	private void write(RegistryFriendlyByteBuf buffer) {
+	private void write(FriendlyByteBuf buffer) {
 		buffer.writeUtf(languageCode);
 		buffer.writeUtf(hash);
 		buffer.writeVarInt(uncompressedBytes);
@@ -49,7 +42,7 @@ public record WorldLanguageDataPayload(
 		buffer.writeByteArray(compressedData);
 	}
 
-	private static WorldLanguageDataPayload read(RegistryFriendlyByteBuf buffer) {
+	public static WorldLanguageDataPayload read(FriendlyByteBuf buffer) {
 		WorldLanguageDataPayload payload = new WorldLanguageDataPayload(
 				buffer.readUtf(),
 				buffer.readUtf(MAX_HASH_LENGTH),

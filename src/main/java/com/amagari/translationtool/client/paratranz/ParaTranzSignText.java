@@ -1,7 +1,7 @@
 package com.amagari.translationtool.client.paratranz;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.PlainTextContents;
+import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.world.level.block.entity.SignText;
 
 public final class ParaTranzSignText {
@@ -23,11 +23,11 @@ public final class ParaTranzSignText {
 	}
 
 	private static Component translate(Component component) {
-		if (!(component.getContents() instanceof PlainTextContents plainText) || !component.getSiblings().isEmpty()) {
+		if (!(component.getContents() instanceof LiteralContents literalText) || !component.getSiblings().isEmpty()) {
 			return component;
 		}
 
-		return ParaTranzContext.translateLiteralWorldText(plainText.text())
+		return ParaTranzContext.translateLiteralWorldText(literalText.text())
 				.<Component>map(text -> Component.literal(text).setStyle(component.getStyle()))
 				.orElse(component);
 	}

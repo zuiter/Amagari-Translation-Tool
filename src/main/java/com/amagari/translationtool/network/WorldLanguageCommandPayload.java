@@ -1,30 +1,24 @@
 package com.amagari.translationtool.network;
 
 import com.amagari.translationtool.AmagariTranslationTool;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
-public record WorldLanguageCommandPayload(Action action) implements CustomPacketPayload {
-	public static final CustomPacketPayload.Type<WorldLanguageCommandPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_command")
-	);
-	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageCommandPayload> CODEC = StreamCodec.ofMember(
-			WorldLanguageCommandPayload::write,
-			WorldLanguageCommandPayload::read
-	);
+public record WorldLanguageCommandPayload(Action action) {
+	public static final ResourceLocation TYPE = new ResourceLocation(AmagariTranslationTool.MOD_ID, "world_language_command");
 
-	@Override
-	public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
-		return TYPE;
+	public FriendlyByteBuf toBuffer() {
+		FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+		write(buffer);
+		return buffer;
 	}
 
-	private void write(RegistryFriendlyByteBuf buffer) {
+	private void write(FriendlyByteBuf buffer) {
 		buffer.writeEnum(action);
 	}
 
-	private static WorldLanguageCommandPayload read(RegistryFriendlyByteBuf buffer) {
+	public static WorldLanguageCommandPayload read(FriendlyByteBuf buffer) {
 		return new WorldLanguageCommandPayload(buffer.readEnum(Action.class));
 	}
 

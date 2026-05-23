@@ -2,22 +2,15 @@ package com.amagari.translationtool.network;
 
 import com.amagari.translationtool.AmagariTranslationTool;
 import com.amagari.translationtool.translation.WorldLanguageTransfer;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> languages) implements CustomPacketPayload {
-	public static final CustomPacketPayload.Type<WorldLanguageManifestPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_manifest")
-	);
-	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageManifestPayload> CODEC = StreamCodec.ofMember(
-			WorldLanguageManifestPayload::write,
-			WorldLanguageManifestPayload::read
-	);
+public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> languages) {
+	public static final ResourceLocation TYPE = new ResourceLocation(AmagariTranslationTool.MOD_ID, "world_language_manifest");
 
 	private static final int MAX_LANGUAGES = 128;
 	private static final int MAX_HASH_LENGTH = 128;
@@ -26,12 +19,13 @@ public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> la
 		languages = Map.copyOf(languages);
 	}
 
-	@Override
-	public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
-		return TYPE;
+	public FriendlyByteBuf toBuffer() {
+		FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+		write(buffer);
+		return buffer;
 	}
 
-	private void write(RegistryFriendlyByteBuf buffer) {
+	private void write(FriendlyByteBuf buffer) {
 		buffer.writeVarInt(languages.size());
 		for (Map.Entry<String, LanguageManifestEntry> language : languages.entrySet()) {
 			buffer.writeUtf(language.getKey());
@@ -39,7 +33,7 @@ public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> la
 		}
 	}
 
-	private static WorldLanguageManifestPayload read(RegistryFriendlyByteBuf buffer) {
+	public static WorldLanguageManifestPayload read(FriendlyByteBuf buffer) {
 		int languageCount = buffer.readVarInt();
 		validateCount(languageCount, MAX_LANGUAGES, "languages");
 
@@ -62,14 +56,14 @@ public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> la
 			int compressedBytes,
 			int entries
 	) {
-		private void write(RegistryFriendlyByteBuf buffer) {
+		private void write(FriendlyByteBuf buffer) {
 			buffer.writeUtf(hash);
 			buffer.writeVarInt(uncompressedBytes);
 			buffer.writeVarInt(compressedBytes);
 			buffer.writeVarInt(entries);
 		}
 
-		private static LanguageManifestEntry read(RegistryFriendlyByteBuf buffer) {
+		private static LanguageManifestEntry read(FriendlyByteBuf buffer) {
 			LanguageManifestEntry entry = new LanguageManifestEntry(
 					buffer.readUtf(MAX_HASH_LENGTH),
 					buffer.readVarInt(),

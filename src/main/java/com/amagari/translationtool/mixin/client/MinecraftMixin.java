@@ -28,8 +28,8 @@ public class MinecraftMixin {
 		WorldLanguageClient.reloadLanguage((Minecraft) (Object) this);
 	}
 
-	@Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V", at = @At("HEAD"))
-	private void amagari_translation_tool$clearWorldLanguageDirectory(Screen screen, boolean transferring, CallbackInfo callbackInfo) {
+	@Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At("HEAD"))
+	private void amagari_translation_tool$clearWorldLanguageDirectory(Screen screen, CallbackInfo callbackInfo) {
 		WorldLanguageContext.leaveWorld();
 		ParaTranzContext.resetSessionState();
 	}

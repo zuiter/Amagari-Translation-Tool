@@ -18,7 +18,7 @@ public final class ParaTranzProjectMatcher {
 				.filter(project -> normalize(project.name()).equals(normalizedQuery))
 				.toList();
 		if (exactMatches.size() == 1) {
-			return MatchResult.matched(exactMatches.getFirst());
+			return MatchResult.matched(exactMatches.get(0));
 		}
 		if (exactMatches.size() > 1) {
 			return MatchResult.ambiguous(exactMatches);
@@ -28,7 +28,7 @@ public final class ParaTranzProjectMatcher {
 				.filter(project -> normalize(project.name()).contains(normalizedQuery))
 				.toList();
 		if (partialMatches.size() == 1) {
-			return MatchResult.matched(partialMatches.getFirst());
+			return MatchResult.matched(partialMatches.get(0));
 		}
 		if (partialMatches.size() > 1) {
 			return MatchResult.ambiguous(partialMatches);

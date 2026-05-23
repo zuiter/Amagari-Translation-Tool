@@ -8,7 +8,7 @@ Run after normal code changes:
 
 ```powershell
 git diff --check
-.\gradlew-java21.bat build --stacktrace
+.\gradlew-java17.bat build --stacktrace
 ```
 
 This proves formatting and compilation, not multiplayer runtime behavior.
@@ -20,14 +20,14 @@ Only launch Minecraft clients when explicitly requested.
 Example command when manual client testing is requested:
 
 ```powershell
-.\gradlew-java21.bat runClient
+.\gradlew-java17.bat runClient
 ```
 
 ## Current Scaffold Checklist
 
 Expected after a clean build:
 
-- `build/libs/amagari-translation-tool-mc1.21.4-fabric-<version>.jar` exists.
+- `build/libs/amagari-translation-tool-mc1.20.1-fabric-<version>.jar` exists.
 - `fabric.mod.json` expands `${version}` and `${minecraft_dependency}` during resource processing.
 - The main entrypoint class compiles successfully.
 
@@ -40,7 +40,7 @@ Use this checklist when manually testing world language files:
 - Enter the singleplayer world and confirm the overridden text appears without enabling a resource pack.
 - Edit the file, run `/amagari_lang reload`, and confirm the changed translation appears and no red server-side command parse error is shown.
 - Run `/amagari_lang status` and confirm it reports the loaded file and entry count without a red server-side command parse error.
-- Run `/amagari_lang help` and confirm it lists `help`, `reload`, `status`, `pull`, and `push` only for the executing player.
+- Run `/amagari_lang help` and confirm it lists `help`, `reload`, `status`, `paratranz`, `pull`, and `push` for the executing player.
 - Switch the client language between Chinese and English, then confirm `/amagari_lang help`, `/amagari_lang reload`, and `/amagari_lang status` feedback follows the executing client's language.
 - Add a malformed JSON file and confirm the client keeps running while the mod logs/skips the bad file.
 - Leave the world and enter a different world without language files; confirm the previous world's overrides no longer apply after reload.
@@ -73,7 +73,7 @@ Use this checklist when manually testing ParaTranz downloads:
 - Type `/amagari_lang paratranz ` and confirm tab/completion suggestions include project names from the configured API token.
 - Run `/amagari_lang paratranz Permafrost-i18n` and confirm it downloads, caches, and applies the project translations.
 - In the `Permafrost-i18n` lobby, confirm fixed signs such as `Credits`, `Enable Fabulous`, and `Install the Resource Pack if you see Bedrock` render with their pulled Chinese `*.world.block.*` translations after apply.
-- Confirm `.minecraft/config/amagari_translation_tool.json` exists and contains `paratranzApiToken`.
+- Confirm `.minecraft/config/amagari_lang/config.json` exists and contains `paratranzApiToken`.
 - Confirm `.minecraft/amagari_translation_tool/paratranz_cache/19173/` contains a downloaded artifact zip and metadata after a successful pull.
 - Run `/amagari_lang status` and confirm it reports the world/remote language state plus ParaTranz project name/id, artifact id/time, loaded files, entries, active languages, and any failed files.
 - Temporarily replace the token with an invalid value and confirm the error says the token was rejected without printing the token.
