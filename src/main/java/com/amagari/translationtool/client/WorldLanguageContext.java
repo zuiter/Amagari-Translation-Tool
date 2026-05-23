@@ -1,6 +1,7 @@
 package com.amagari.translationtool.client;
 
 import com.amagari.translationtool.AmagariTranslationTool;
+import com.amagari.translationtool.client.paratranz.ParaTranzContext;
 import com.amagari.translationtool.network.WorldLanguageDataPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
@@ -116,18 +117,21 @@ public final class WorldLanguageContext {
 			WorldLanguageReport report = mergeRemoteTranslations(languageCodes, translations, remoteTranslations);
 			LAST_REPORT.set(report);
 			report.log();
+			ParaTranzContext.mergeTranslations(languageCodes, translations);
 			return;
 		}
 
 		Optional<Path> worldDirectory = getWorldDirectory();
 		if (worldDirectory.isEmpty()) {
 			LAST_REPORT.set(WorldLanguageReport.notLoaded());
+			ParaTranzContext.mergeTranslations(languageCodes, translations);
 			return;
 		}
 
 		WorldLanguageReport report = WorldLanguageReport.local(WorldLanguageFiles.loadSelectedInto(worldDirectory.get(), languageCodes, translations));
 		LAST_REPORT.set(report);
 		report.log();
+		ParaTranzContext.mergeTranslations(languageCodes, translations);
 	}
 
 	public static String describeLastReport() {
