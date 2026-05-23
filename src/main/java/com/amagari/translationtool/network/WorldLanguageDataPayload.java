@@ -17,7 +17,7 @@ public record WorldLanguageDataPayload(
 		byte[] compressedData
 ) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<WorldLanguageDataPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_data")
+			new ResourceLocation(AmagariTranslationTool.MOD_ID, "world_language_data")
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageDataPayload> CODEC = StreamCodec.ofMember(
 			WorldLanguageDataPayload::write,

@@ -12,7 +12,7 @@ import java.util.Map;
 
 public record WorldLanguageManifestPayload(Map<String, LanguageManifestEntry> languages) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<WorldLanguageManifestPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_manifest")
+			new ResourceLocation(AmagariTranslationTool.MOD_ID, "world_language_manifest")
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageManifestPayload> CODEC = StreamCodec.ofMember(
 			WorldLanguageManifestPayload::write,

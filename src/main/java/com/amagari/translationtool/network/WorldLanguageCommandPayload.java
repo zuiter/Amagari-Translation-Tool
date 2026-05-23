@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public record WorldLanguageCommandPayload(Action action) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<WorldLanguageCommandPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_command")
+			new ResourceLocation(AmagariTranslationTool.MOD_ID, "world_language_command")
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageCommandPayload> CODEC = StreamCodec.ofMember(
 			WorldLanguageCommandPayload::write,

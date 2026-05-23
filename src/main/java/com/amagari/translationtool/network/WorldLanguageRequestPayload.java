@@ -11,7 +11,7 @@ import java.util.List;
 
 public record WorldLanguageRequestPayload(List<LanguageRequest> languages) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<WorldLanguageRequestPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "world_language_request")
+			new ResourceLocation(AmagariTranslationTool.MOD_ID, "world_language_request")
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, WorldLanguageRequestPayload> CODEC = StreamCodec.ofMember(
 			WorldLanguageRequestPayload::write,
