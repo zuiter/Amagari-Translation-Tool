@@ -1,5 +1,7 @@
 package com.amagari.translationtool.client;
 
+import com.amagari.translationtool.client.paratranz.ParaTranzClientCommands;
+import com.amagari.translationtool.client.paratranz.ParaTranzContext;
 import com.amagari.translationtool.network.WorldLanguageCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageDataPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
@@ -16,6 +18,7 @@ import java.util.Map;
 public class AmagariTranslationToolClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
+		ParaTranzClientCommands.register();
 		ClientPlayNetworking.registerGlobalReceiver(WorldLanguageManifestPayload.TYPE, (payload, context) -> context.client().execute(() -> {
 			Map<String, String> missingLanguages = WorldLanguageContext.receiveRemoteManifest(context.client(), payload.languages());
 			if (!missingLanguages.isEmpty()) {
@@ -33,7 +36,10 @@ public class AmagariTranslationToolClient implements ClientModInitializer {
 			}
 		}));
 		ClientPlayNetworking.registerGlobalReceiver(WorldLanguageCommandPayload.TYPE, (payload, context) -> context.client().execute(() -> handleServerCommand(payload, context.client())));
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WorldLanguageContext.leaveWorld());
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+			WorldLanguageContext.leaveWorld();
+			ParaTranzContext.resetSessionState();
+		});
 	}
 
 	private static void handleServerCommand(WorldLanguageCommandPayload payload, Minecraft client) {
@@ -47,6 +53,7 @@ public class AmagariTranslationToolClient implements ClientModInitializer {
 	private static void sendCommandFeedback(Minecraft client) {
 		if (client.player != null) {
 			client.player.displayClientMessage(Component.literal(WorldLanguageContext.describeLastReport(client.getLanguageManager().getSelected())), false);
+			client.player.displayClientMessage(Component.literal(ParaTranzContext.lastReport().describe(client.getLanguageManager().getSelected())), false);
 		}
 	}
 }

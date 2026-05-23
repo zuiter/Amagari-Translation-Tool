@@ -8,7 +8,7 @@ Run after normal code changes:
 
 ```powershell
 git diff --check
-.\gradlew.bat build --stacktrace
+.\gradlew-java21.bat build --stacktrace
 ```
 
 This proves formatting and compilation, not multiplayer runtime behavior.
@@ -20,7 +20,7 @@ Only launch Minecraft clients when explicitly requested.
 Example command when manual client testing is requested:
 
 ```powershell
-.\gradlew.bat runClient
+.\gradlew-java21.bat runClient
 ```
 
 ## Current Scaffold Checklist
@@ -40,7 +40,7 @@ Use this checklist when manually testing world language files:
 - Enter the singleplayer world and confirm the overridden text appears without enabling a resource pack.
 - Edit the file, run `/amagari_lang reload`, and confirm the changed translation appears and no red server-side command parse error is shown.
 - Run `/amagari_lang status` and confirm it reports the loaded file and entry count without a red server-side command parse error.
-- Run `/amagari_lang help` and confirm it lists `help`, `reload`, `status`, `pull`, and `push` only for the executing player.
+- Run `/amagari_lang help` and confirm it lists `help`, `reload`, `status`, `paratranz`, `pull`, and `push` for the executing player.
 - Switch the client language between Chinese and English, then confirm `/amagari_lang help`, `/amagari_lang reload`, and `/amagari_lang status` feedback follows the executing client's language.
 - Add a malformed JSON file and confirm the client keeps running while the mod logs/skips the bad file.
 - Leave the world and enter a different world without language files; confirm the previous world's overrides no longer apply after reload.
@@ -58,13 +58,27 @@ Use this checklist when manually testing remote server language delivery:
 - Rejoin the same server without changing files and confirm `/amagari_lang status` reports cached manifest handling without requiring a fresh data download.
 - Create or age old cache files in `.minecraft/amagari_translation_tool/lang_cache`, then trigger a manifest load/download and confirm files unused for more than 7 days are removed.
 - Create more than two cached hashes for the same server/language, then trigger a manifest load/download and confirm only the two most recently used hashes remain.
-- Create a language file whose compressed transfer data is larger than 512 KiB but below 4 MiB, then confirm it downloads across multiple chunks and loads after all chunks arrive.
 - Edit a server-side language file, run `/amagari_lang push` as an operator, and confirm the connected client requests and receives only the changed language data.
 - Run `/amagari_lang pull` as a normal player and confirm the server publishes a fresh manifest for that player.
 - Confirm `/amagari_lang pull` and `/amagari_lang push` feedback is visible only to the executing player and follows that player's client language.
 - Join with a client that does not have this mod installed and confirm the server keeps running without trying to send unsupported payloads.
 - Change the client's language, reconnect or run `/amagari_lang pull`, and confirm the server offers the newly selected language plus `en_us`.
 - Add a malformed JSON file on the server and confirm the server logs/skips it while still sending valid files.
+
+## ParaTranz Pull Checklist
+
+Use this checklist when manually testing ParaTranz downloads:
+
+- Run `/amagari_lang paratranz` and confirm the chat feedback lists projects including `Permafrost-i18n`.
+- Type `/amagari_lang paratranz ` and confirm tab/completion suggestions include project names from the configured API token.
+- Run `/amagari_lang paratranz Permafrost-i18n` and confirm it downloads, caches, and applies the project translations.
+- In the `Permafrost-i18n` lobby, confirm fixed signs such as `Credits`, `Enable Fabulous`, and `Install the Resource Pack if you see Bedrock` render with their pulled Chinese `*.world.block.*` translations after apply.
+- Confirm `.minecraft/config/amagari_lang/config.json` exists and contains `paratranzApiToken`.
+- Confirm `.minecraft/amagari_translation_tool/paratranz_cache/19173/` contains a downloaded artifact zip and metadata after a successful pull.
+- Run `/amagari_lang status` and confirm it reports the world/remote language state plus ParaTranz project name/id, artifact id/time, loaded files, entries, active languages, and any failed files.
+- Temporarily replace the token with an invalid value and confirm the error says the token was rejected without printing the token.
+- Run `/amagari_lang paratranz <missing-project>` and confirm it shows a clean not-found or ambiguous-project message with suggestions when applicable.
+- In a singleplayer integrated-server world, run `/amagari_lang paratranz`, `/amagari_lang paratranz Permafrost-i18n`, and `/amagari_lang status`; confirm chat feedback appears and no red Brigadier parse error is shown.
 
 ## Open To LAN Language Sync Checklist
 

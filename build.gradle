@@ -41,6 +41,32 @@ java {
 	targetCompatibility = JavaVersion.VERSION_21
 }
 
+tasks.register("runUnitChecks", JavaExec) {
+	group = "verification"
+	description = "Runs lightweight no-dependency unit checks."
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = "com.amagari.translationtool.AmagariUnitChecks"
+}
+
+tasks.register("runParaTranzSmokeCheck", JavaExec) {
+	group = "verification"
+	description = "Runs a live ParaTranz export/download smoke check when PARATRANZ_TOKEN is set."
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = "com.amagari.translationtool.ParaTranzSmokeCheck"
+	doFirst {
+		def token = System.getenv("PARATRANZ_TOKEN")
+		if (token == null || token.isBlank()) {
+			throw new GradleException("PARATRANZ_TOKEN is required")
+		}
+		args(token)
+	}
+}
+
+check.dependsOn(tasks.named("runUnitChecks"))
+
+tasks.named("test") {
+	failOnNoDiscoveredTests = false
+}
 jar {
 	inputs.property "archivesName", project.base.archivesName
 

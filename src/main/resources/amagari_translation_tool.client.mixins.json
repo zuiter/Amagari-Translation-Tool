@@ -3,6 +3,7 @@
 	"package": "com.amagari.translationtool.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"AbstractSignRendererMixin",
 		"ClientLanguageMixin",
 		"MinecraftMixin"
 	],
