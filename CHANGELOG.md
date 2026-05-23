@@ -8,6 +8,10 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ### 新增
 
+- 新增客户端 ParaTranz 拉取：`/amagari_lang paratranz` 可列出 API Token 关联项目，`/amagari_lang paratranz <项目名>` 可导出、下载并应用项目语言 JSON。
+- 新增 `.minecraft/config/amagari_lang/config.json` 配置文件，包含 `paratranzApiToken` 字段；ParaTranz 下载缓存写入 `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`。
+- `/amagari_lang status` 现在会同时显示地图/远程语言状态和 ParaTranz 最近一次列表、下载、应用或失败状态。
+- 新增轻量级 `runUnitChecks` 验证任务，覆盖 ParaTranz 项目匹配、API JSON 解析、zip 语言识别、坏 JSON 跳过和状态文案。
 - 客户端远程语言缓存会自动清理：7 天未使用的缓存文件会被删除，同一服务器同一语言最多保留最近 2 个 hash。
 
 ## [0.0.1] - 2026-05-17
