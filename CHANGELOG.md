@@ -15,6 +15,10 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 - 新增面向 Minecraft 1.21.11 Fabric 的适配分支：构建目标改为 Java 21，依赖更新为 Fabric API 0.141.4+1.21.11、Fabric Loader 0.19.2，并同步 1.21.11 的 Fabric 网络 payload、命令和客户端 mixin API。
 - 远程语言数据改为分片发送：单个语言保留 4 MiB 压缩数据总上限，但每个网络 payload 最多发送 512 KiB，以适配 Minecraft 1.21.11 的普通自定义 payload 注册方式。
 
+### 修复
+
+- 修复 Minecraft 1.21.11 分支客户端 mixin 配置仍要求 Java 25，导致 Java 21 启动时 Fabric Loader 报错的问题。
+
 ## [0.0.1] - 2026-05-17
 
 ### 新增
