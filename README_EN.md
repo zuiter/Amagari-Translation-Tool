@@ -1,12 +1,12 @@
 # Amagari Translation Tool
 
-Amagari Translation Tool is a Fabric translation helper mod for Minecraft 1.21.4.
+Amagari Translation Tool is a Fabric translation helper mod for Minecraft 1.21.1.
 
 中文说明见 [README.md](README.md)。
 
 ## Requirements
 
-- Minecraft 1.21.4
+- Minecraft 1.21.1
 - Fabric Loader 0.16.14 or newer
 - Fabric API
 - Java 21
@@ -55,7 +55,7 @@ Loading rules:
 - `/amagari_lang` command feedback is visible only to the player who ran the command. Chinese clients receive Chinese feedback; other languages default to English.
 - Remote servers and LAN hosts provide `en_us` plus each joining player's current client language on demand. If a player changes language after joining, reconnect or run `/amagari_lang pull`.
 - The client cache lives under `.minecraft/amagari_translation_tool/lang_cache`, partitioned by a hash of the server address and storing gzip-compressed data. Cache hits and new downloads refresh the last-used timestamp; entries unused for 7 days are deleted automatically, and each server/language pair keeps at most the 2 most recent hashes.
-- The ParaTranz config file lives at `.minecraft/config/amagari_translation_tool.json` with a `paratranzApiToken` field. This local build writes the feature-provided token by default; logs and errors do not print the token.
+- The ParaTranz config file lives at `.minecraft/config/amagari_lang/config.json` with a `paratranzApiToken` field. The file is created with a blank token placeholder; add your API token manually. Logs and errors do not print the token.
 - Downloaded ParaTranz exports are cached under `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`. Disconnecting from a world clears only the active in-memory state, not the global cache.
 - A single remote language data payload is capped at 4 MiB. Large maps should keep language files scoped to the languages and namespaces they actually use.
 

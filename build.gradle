@@ -67,7 +67,6 @@ check.dependsOn(tasks.named("runUnitChecks"))
 tasks.named("test") {
 	failOnNoDiscoveredTests = false
 }
-
 jar {
 	inputs.property "archivesName", project.base.archivesName
 
