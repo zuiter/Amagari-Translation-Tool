@@ -1,5 +1,6 @@
 package com.amagari.translationtool.mixin.client;
 
+import com.amagari.translationtool.client.bilingual.BilingualLanguageController;
 import com.amagari.translationtool.client.WorldLanguageClient;
 import com.amagari.translationtool.client.WorldLanguageContext;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
@@ -31,6 +32,7 @@ public class MinecraftMixin {
 	@Inject(method = "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V", at = @At("HEAD"))
 	private void amagari_translation_tool$clearWorldLanguageDirectory(Screen screen, CallbackInfo callbackInfo) {
 		WorldLanguageContext.leaveWorld();
+		BilingualLanguageController.resetSessionState((Minecraft) (Object) this);
 		ParaTranzContext.resetSessionState();
 	}
 }

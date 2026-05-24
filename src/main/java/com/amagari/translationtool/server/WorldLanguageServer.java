@@ -1,6 +1,7 @@
 package com.amagari.translationtool.server;
 
 import com.amagari.translationtool.AmagariTranslationTool;
+import com.amagari.translationtool.network.ParaTranzCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageDataPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
@@ -69,14 +70,29 @@ public final class WorldLanguageServer {
 							return playerCount;
 						}))
 						.then(Commands.literal("paratranz")
-								.executes(context -> handleClientOnlyParaTranz(context.getSource().getPlayerOrException()))
-								.then(Commands.argument("projectName", StringArgumentType.greedyString())
-										.executes(context -> handleClientOnlyParaTranz(context.getSource().getPlayerOrException()))))
+								.executes(context -> sendParaTranzCommand(context.getSource().getPlayerOrException(), ParaTranzCommandPayload.Action.HELP))
+								.then(Commands.literal("projects")
+										.executes(context -> sendParaTranzCommand(context.getSource().getPlayerOrException(), ParaTranzCommandPayload.Action.PROJECTS)))
+								.then(Commands.literal("config")
+										.executes(context -> sendParaTranzCommand(context.getSource().getPlayerOrException(), ParaTranzCommandPayload.Action.CONFIG)))
+								.then(Commands.literal("pull")
+										.executes(context -> sendParaTranzCommand(context.getSource().getPlayerOrException(), ParaTranzCommandPayload.Action.PROJECTS))
+										.then(Commands.argument("projectName", StringArgumentType.greedyString())
+												.executes(context -> sendParaTranzCommand(
+														context.getSource().getPlayerOrException(),
+														ParaTranzCommandPayload.Action.PULL,
+														StringArgumentType.getString(context, "projectName")
+												)))))
 		));
 	}
 
-	private static int handleClientOnlyParaTranz(ServerPlayer player) {
-		if (ServerPlayNetworking.canSend(player, WorldLanguageCommandPayload.TYPE)) {
+	private static int sendParaTranzCommand(ServerPlayer player, ParaTranzCommandPayload.Action action) {
+		return sendParaTranzCommand(player, action, "");
+	}
+
+	private static int sendParaTranzCommand(ServerPlayer player, ParaTranzCommandPayload.Action action, String argument) {
+		if (ServerPlayNetworking.canSend(player, ParaTranzCommandPayload.TYPE)) {
+			ServerPlayNetworking.send(player, ParaTranzCommandPayload.TYPE, new ParaTranzCommandPayload(action, argument).toBuffer());
 			return 1;
 		}
 		player.sendSystemMessage(Component.literal(WorldLanguageMessages.unsupportedClient(language(player))));

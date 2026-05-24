@@ -1,4 +1,4 @@
-# Amagari Translation Tool
+﻿# Amagari Translation Tool
 
 Amagari Translation Tool is a Fabric translation helper mod for Minecraft 1.20.1.
 
@@ -47,16 +47,22 @@ Loading rules:
 - After editing remote server files, an operator can run `/amagari_lang push` to publish a new manifest. Online clients automatically request language data whose hash changed.
 - Players can also run `/amagari_lang pull` to request a fresh manifest for their own language.
 - Run `/amagari_lang help` to show a short description of every subcommand.
-- Run `/amagari_lang paratranz` to list ParaTranz projects associated with the current API token.
-- Run `/amagari_lang paratranz <project>` to match a ParaTranz project by name, export it, download it, and apply its language JSON immediately; for example, `/amagari_lang paratranz Permafrost-i18n`.
+- Run `/amagari_lang paratranz config` to open the local ParaTranz settings screen. Existing tokens are not echoed; saving an empty field keeps the old token, and `Clear token` removes it. The screen also configures source language, target language, export triggering, how many artifact zips to cache per project, and whether a successful pull overwrites the current local world's language file.
+- When `Overwrite current world language files` is enabled, a successful ParaTranz pull writes the target language to the current local world's `amagari_translation_tool/lang/<target>.json` and removes older split files for that same language, such as `zh_cn.items.json`. If no writable local world directory is active, overwrite is skipped and translations are applied only to the current client session.
+- Run `/amagari_lang paratranz` to show ParaTranz subcommand help. Run `/amagari_lang paratranz projects` to list ParaTranz projects associated with the current API token. Project names in the list are clickable and run the matching pull command.
+- Run `/amagari_lang paratranz pull <project>` to match a ParaTranz project by name, export it, download it, and apply its language JSON immediately; for example, `/amagari_lang paratranz pull Permafrost-i18n`.
+- In integrated-server singleplayer, LAN, or remote servers, ParaTranz subcommands pass through the server command tree and are forwarded back to the executing client to open the settings screen or run the pull. Feedback still appears only to the executor.
 - The ParaTranz project argument offers tab completions from the projects visible to the configured API token.
 - When an applied ParaTranz export includes `*.world.block.*` entries, matching literal sign lines are translated on the client while rendering. This covers fixed `Permafrost-i18n` lobby signs without modifying the saved world.
 - Run `/amagari_lang status` to show both the world/remote language status and the latest ParaTranz pull status, including project, artifact, file count, entry count, languages, and errors.
 - `/amagari_lang` command feedback is visible only to the player who ran the command. Chinese clients receive Chinese feedback; other languages default to English.
 - Remote servers and LAN hosts provide `en_us` plus each joining player's current client language on demand. If a player changes language after joining, reconnect or run `/amagari_lang pull`.
 - The client cache lives under `.minecraft/amagari_translation_tool/lang_cache`, partitioned by a hash of the server address and storing gzip-compressed data. Cache hits and new downloads refresh the last-used timestamp; entries unused for 7 days are deleted automatically, and each server/language pair keeps at most the 2 most recent hashes.
-- The ParaTranz config file lives at `.minecraft/config/amagari_lang/config.json` with a `paratranzApiToken` field. The file is created with a blank token placeholder; add your API token manually. Logs and errors do not print the token.
+- The ParaTranz config file lives at `.minecraft/config/amagari_lang/config.json` with `paratranzApiToken`, `sourceLanguage`, `targetLanguage`, `triggerExport`, `maxCachedArtifacts`, and `overwriteWorldLanguageFiles` fields. The legacy `.minecraft/config/amagari_translation_tool.json` path migrates automatically, and logs/errors do not print the token.
 - Downloaded ParaTranz exports are cached under `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`. Disconnecting from a world clears only the active in-memory state, not the global cache.
+- Press `V` by default to switch between the ParaTranz target language and the configured source language. Source-language mode temporarily pauses the ParaTranz override so the client falls back to source-language resources and any matching world source-language files. Fixed sign lines backed by `*.world.block.*` entries prefer the current ParaTranz pull, and also use matching current-world or remote-synced language files after an export has been overwritten into `amagari_translation_tool/lang`.
+- Press `H` by default to toggle source text helpers: item tooltips add the source name, signs with matching ParaTranz `*.world.block.*` literal translations show source text near the crosshair, and translatable book text gets a hoverable `ⓘ` marker. Ordinary block names are not shown as crosshair HUD text.
+- Source display first reads the enabled Minecraft, resource-pack, and mod source-language resources, such as `assets/*/lang/en_us.json`. It falls back to source-language entries from the ParaTranz project pulled in the current session only when the resource language table does not contain the key. `V` client-language switching does not require a pulled project, but ParaTranz fixed-sign source/target switching needs matching `*.world.block.*` entries in the current session pull, current-world language files, or remote-synced language files.
 - A single remote language data payload is capped at 4 MiB. Large maps should keep language files scoped to the languages and namespaces they actually use.
 
 ## Build
