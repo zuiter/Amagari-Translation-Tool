@@ -92,6 +92,7 @@ public final class BilingualLanguageController {
 		String languageCode = selectedLanguage(client);
 		ParaTranzConfig config = currentConfig(client);
 		SOURCE_DISPLAY_ACTIVE.set(enabled);
+		BilingualBookText.invalidateCache();
 		send(client, WorldLanguageMessages.bilingualSourceDisplayToggled(enabled, config.sourceLanguage(), languageCode));
 	}
 
@@ -125,6 +126,7 @@ public final class BilingualLanguageController {
 
 	public static void reloadSourceTranslations() {
 		BilingualSourceTranslations.clearCache();
+		BilingualBookText.invalidateCache();
 	}
 
 	private static void send(Minecraft client, String message) {

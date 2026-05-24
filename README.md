@@ -62,7 +62,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 - ParaTranz 配置文件位于 `.minecraft/config/amagari_lang/config.json`，字段包括 `paratranzApiToken`、`sourceLanguage`、`targetLanguage`、`triggerExport`、`maxCachedArtifacts` 和 `overwriteWorldLanguageFiles`；旧版 `.minecraft/config/amagari_translation_tool.json` 会自动迁移，日志和错误信息不会打印 Token。
 - ParaTranz 下载缓存位于 `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`，断开世界只会清理本次会话内的激活状态，不会删除全局缓存。
 - 默认按 `V` 可在 ParaTranz 目标语言和配置的源语言之间切换；切到源语言时会临时暂停 ParaTranz 覆盖，让客户端回到源语言资源和地图源语言文件。固定告示牌的 `*.world.block.*` 字面量翻译会优先使用本次 ParaTranz 拉取结果；如果拉取结果已覆盖到当前地图或来自远程同步语言文件，也会用对应地图/远程语言文件进行源文和译文切换。
-- 默认按 `H` 可开启源文显示：物品 tooltip 追加源语言名称，看向带有 ParaTranz `*.world.block.*` 翻译的告示牌时在准星旁显示源文本，书本里的可翻译文本会附加一个可悬停查看源文的 `ⓘ` 标记；普通方块名不会再作为 HUD 显示。
+- 默认按 `H` 可开启源文显示：物品会在原 tooltip 旁显示独立的源语言 tooltip，并尽量按原 tooltip 的可翻译行显示源文；看向带有 ParaTranz `*.world.block.*` 翻译的告示牌时会在准星旁显示源文本，书本里的可翻译文本会附加一个可悬停查看源文的 `ⓘ` 标记；普通方块名不会再作为 HUD 显示。
 - 源文显示会优先读取当前已启用的 Minecraft、资源包和模组自身的源语言资源，例如 `assets/*/lang/en_us.json`；只有资源语言表找不到对应 key 时，才回退到本次会话已拉取的 ParaTranz 源语言条目。`V` 的客户端语言切换不要求先拉取项目，但 ParaTranz 固定告示牌源文/译文切换需要当前会话拉取结果、当前地图语言文件或远程同步语言文件里存在对应 `*.world.block.*` 条目。
 - 单个远程语言数据 payload 上限为 4 MiB；大型地图建议按实际使用语言和命名空间控制语言文件规模。
 
