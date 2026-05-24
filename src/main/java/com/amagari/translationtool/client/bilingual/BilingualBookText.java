@@ -2,16 +2,16 @@ package com.amagari.translationtool.client.bilingual;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.contents.TranslatableContents;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class BilingualBookText {
 	private static final String SOURCE_MARK = " ⓘ";
+	private static final AtomicInteger CACHE_VERSION = new AtomicInteger();
 
 	private BilingualBookText() {
 	}
@@ -23,6 +23,14 @@ public final class BilingualBookText {
 
 		MutableComponent copied = copyWithSourceHover(component);
 		return copied.equals(component) ? component : copied;
+	}
+
+	public static void invalidateCache() {
+		CACHE_VERSION.incrementAndGet();
+	}
+
+	public static int cacheVersion() {
+		return CACHE_VERSION.get();
 	}
 
 	private static MutableComponent copyWithSourceHover(Component component) {
@@ -43,10 +51,6 @@ public final class BilingualBookText {
 	}
 
 	private static Optional<String> sourceText(Component component) {
-		ComponentContents contents = component.getContents();
-		if (!(contents instanceof TranslatableContents translatableContents)) {
-			return Optional.empty();
-		}
-		return BilingualSourceTranslations.sourceText(translatableContents.getKey()).filter(text -> !text.isBlank());
+		return BilingualSourceText.ownSourceText(component);
 	}
 }
