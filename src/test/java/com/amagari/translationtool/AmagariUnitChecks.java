@@ -2,21 +2,31 @@ package com.amagari.translationtool;
 
 import com.amagari.translationtool.client.paratranz.ParaTranzArtifact;
 import com.amagari.translationtool.client.paratranz.ParaTranzConfig;
+import com.amagari.translationtool.client.paratranz.ParaTranzContext;
 import com.amagari.translationtool.client.paratranz.ParaTranzJson;
 import com.amagari.translationtool.client.paratranz.ParaTranzLiteralTranslations;
 import com.amagari.translationtool.client.paratranz.ParaTranzProject;
 import com.amagari.translationtool.client.paratranz.ParaTranzProjectMatcher;
 import com.amagari.translationtool.client.paratranz.ParaTranzProjectSuggestions;
 import com.amagari.translationtool.client.paratranz.ParaTranzReport;
+import com.amagari.translationtool.client.paratranz.ParaTranzSignText;
 import com.amagari.translationtool.client.paratranz.ParaTranzZipTranslations;
+import com.amagari.translationtool.translation.WorldLanguageFiles;
+import com.amagari.translationtool.translation.WorldLanguageMessages;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.SignText;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -37,7 +47,13 @@ public final class AmagariUnitChecks {
 		migratesLegacyParaTranzConfig();
 		infersLanguageCodesFromParaTranzZipPaths();
 		parsesValidJsonFilesAndSkipsMalformedFiles();
+		mapsConfiguredParaTranzSourceLanguageToTargetLanguage();
+		overwritesWorldLanguageFileForTargetLanguage();
 		resolvesLiteralWorldBlockTranslations();
+		resolvesSourceLiteralWorldBlockTranslations();
+		resolvesWorldFileLiteralSignTranslations();
+		translatesStyledLiteralSignComponents();
+		buildsClickableParaTranzProjectList();
 		describesParaTranzStatus();
 	}
 
@@ -153,6 +169,7 @@ public final class AmagariUnitChecks {
 
 	private static void defaultConfigStartsBlank() {
 		check(ParaTranzConfig.defaultConfig().paratranzApiToken().isBlank(), "expected editable blank ParaTranz token placeholder");
+		check(!ParaTranzConfig.defaultConfig().overwriteWorldLanguageFiles(), "expected world language overwrite to be disabled by default");
 	}
 
 	private static void createsNestedParaTranzConfig() throws Exception {
@@ -164,6 +181,7 @@ public final class AmagariUnitChecks {
 		check(config.paratranzApiToken().isBlank(), "expected newly generated config to use a blank token");
 		check(Files.exists(configPath), "expected config/amagari_lang/config.json to be created");
 		check(Files.readString(configPath, StandardCharsets.UTF_8).contains("\"paratranzApiToken\""), "expected generated config to contain paratranzApiToken");
+		check(Files.readString(configPath, StandardCharsets.UTF_8).contains("\"overwriteWorldLanguageFiles\""), "expected generated config to contain overwriteWorldLanguageFiles");
 	}
 
 	private static void migratesLegacyParaTranzConfig() throws Exception {
@@ -176,6 +194,7 @@ public final class AmagariUnitChecks {
 
 		Path configPath = gameDirectory.resolve("config").resolve("amagari_lang").resolve("config.json");
 		check("legacy-token".equals(config.paratranzApiToken()), "expected legacy token to be loaded");
+		check(!config.overwriteWorldLanguageFiles(), "expected migrated config to keep world language overwrite disabled");
 		check(Files.exists(configPath), "expected legacy config to be migrated to nested config path");
 		check(Files.readString(configPath, StandardCharsets.UTF_8).contains("legacy-token"), "expected migrated config to preserve legacy token");
 	}
@@ -202,6 +221,33 @@ public final class AmagariUnitChecks {
 		check(result.translationsByLanguage().get("zh_cn").get("item.minecraft.book").equals("配方书"), "expected zh_cn translation");
 	}
 
+	private static void mapsConfiguredParaTranzSourceLanguageToTargetLanguage() throws Exception {
+		byte[] zipData = zip(Map.of("utf8/en_us.json", "{\"item.minecraft.diamond\":\"神馐\"}"));
+
+		ParaTranzZipTranslations.ParseResult result = ParaTranzZipTranslations.parse(zipData).mappedLanguage("en_us", "zh_cn");
+
+		check(result.translationsByLanguage().get("zh_cn").get("item.minecraft.diamond").equals("神馐"), "expected configured source language to be mapped into target language");
+	}
+
+	private static void overwritesWorldLanguageFileForTargetLanguage() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-world");
+		Path languageDirectory = worldDirectory.resolve(WorldLanguageFiles.LANG_DIRECTORY);
+		Files.createDirectories(languageDirectory);
+		Files.writeString(languageDirectory.resolve("zh_cn.json"), "{\"item.minecraft.diamond\":\"old target\"}", StandardCharsets.UTF_8);
+		Files.writeString(languageDirectory.resolve("zh_cn.items.json"), "{\"item.minecraft.book\":\"old split\"}", StandardCharsets.UTF_8);
+		Files.writeString(languageDirectory.resolve("en_us.json"), "{\"item.minecraft.diamond\":\"Diamond\"}", StandardCharsets.UTF_8);
+
+		WorldLanguageFiles.overwriteLanguages(worldDirectory, Map.of(
+				"zh_cn",
+				Map.of("item.minecraft.diamond", "new target")
+		));
+
+		String updatedTarget = Files.readString(languageDirectory.resolve("zh_cn.json"), StandardCharsets.UTF_8);
+		check(updatedTarget.contains("new target"), "expected target language file to be overwritten");
+		check(Files.notExists(languageDirectory.resolve("zh_cn.items.json")), "expected old target-language split files to be removed");
+		check(Files.exists(languageDirectory.resolve("en_us.json")), "expected other language files to be preserved");
+	}
+
 	private static void resolvesLiteralWorldBlockTranslations() {
 		Map<String, String> indexed = ParaTranzLiteralTranslations.index(Map.of(
 				"permafrost.i18n.map.credits", "not a sign translation",
@@ -214,6 +260,143 @@ public final class AmagariUnitChecks {
 		check("translated settings".equals(ParaTranzLiteralTranslations.translate("Settings for an", indexed).orElseThrow()), "expected trailing article sign match");
 		check("translated install".equals(ParaTranzLiteralTranslations.translate("Install the", indexed).orElseThrow()), "expected trailing the sign match");
 		check(ParaTranzLiteralTranslations.translate("Credits?", Map.of()).isEmpty(), "expected inactive sign translations to be ignored");
+	}
+
+	private static void resolvesSourceLiteralWorldBlockTranslations() throws Exception {
+		AtomicReference<Map<String, String>> literalTranslations = privateAtomicReference(
+				ParaTranzContext.class,
+				"ACTIVE_LITERAL_TRANSLATIONS"
+		);
+		AtomicReference<Map<String, String>> sourceLiteralTranslations = privateAtomicReference(
+				ParaTranzContext.class,
+				"ACTIVE_SOURCE_LITERAL_TRANSLATIONS"
+		);
+		AtomicBoolean sourceLanguageActive = privateAtomicBoolean(
+				Class.forName("com.amagari.translationtool.client.bilingual.BilingualLanguageController"),
+				"SOURCE_LANGUAGE_ACTIVE"
+		);
+		Map<String, String> previousTranslations = literalTranslations.get();
+		Map<String, String> previousSourceTranslations = sourceLiteralTranslations.get();
+		boolean previousSourceLanguageActive = sourceLanguageActive.get();
+		try {
+			literalTranslations.set(ParaTranzLiteralTranslations.index(Map.of(
+					"permafrost.i18n.world.block.credits",
+					"翻译制作"
+			)));
+			sourceLiteralTranslations.set(ParaTranzLiteralTranslations.sourceIndex(
+					Map.of("permafrost.i18n.world.block.credits", "Credits"),
+					Map.of("permafrost.i18n.world.block.credits", "翻译制作")
+			));
+			sourceLanguageActive.set(false);
+			check(ParaTranzContext.translateLiteralWorldText("Credits").orElseThrow().equals("翻译制作"), "expected literal sign text to translate normally");
+			check(ParaTranzContext.translateLiteralWorldText("翻译制作").orElseThrow().equals("翻译制作"), "expected target-language mode to keep already-target literal sign text");
+
+			sourceLanguageActive.set(true);
+			check(ParaTranzContext.translateLiteralWorldText("翻译制作").orElseThrow().equals("Credits"), "expected source-language mode to restore literal sign source text");
+			check(ParaTranzContext.translateLiteralWorldText("Credits").orElseThrow().equals("Credits"), "expected source-language mode to keep already-source literal sign text");
+			check(ParaTranzContext.sourceLiteralWorldTextForDisplay("翻译制作").orElseThrow().equals("Credits"), "expected source display to show source text for translated signs");
+			check(ParaTranzContext.sourceLiteralWorldTextForDisplay("Credits").orElseThrow().equals("Credits"), "expected source display to show source text for translatable source signs");
+			check(ParaTranzContext.sourceLiteralWorldTextForDisplay("Plain stone").isEmpty(), "expected source display to ignore untranslated block names");
+		} finally {
+			literalTranslations.set(previousTranslations);
+			sourceLiteralTranslations.set(previousSourceTranslations);
+			sourceLanguageActive.set(previousSourceLanguageActive);
+		}
+	}
+
+	private static void resolvesWorldFileLiteralSignTranslations() throws Exception {
+		AtomicReference<Map<String, String>> literalTranslations = privateAtomicReference(
+				ParaTranzContext.class,
+				"ACTIVE_LITERAL_TRANSLATIONS"
+		);
+		AtomicReference<Map<String, String>> sourceLiteralTranslations = privateAtomicReference(
+				ParaTranzContext.class,
+				"ACTIVE_SOURCE_LITERAL_TRANSLATIONS"
+		);
+		AtomicBoolean sourceLanguageActive = privateAtomicBoolean(
+				Class.forName("com.amagari.translationtool.client.bilingual.BilingualLanguageController"),
+				"SOURCE_LANGUAGE_ACTIVE"
+		);
+		Map<String, String> previousTranslations = literalTranslations.get();
+		Map<String, String> previousSourceTranslations = sourceLiteralTranslations.get();
+		boolean previousSourceLanguageActive = sourceLanguageActive.get();
+		try {
+			literalTranslations.set(Map.of());
+			sourceLiteralTranslations.set(Map.of());
+			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false));
+			ParaTranzContext.refreshWorldLiteralTranslations(Map.of(
+					"zh_cn",
+					Map.of("permafrost.i18n.world.block.credits", "鸣谢")
+			));
+
+			sourceLanguageActive.set(false);
+			check("鸣谢".equals(ParaTranzContext.translateLiteralWorldText("Credits").orElseThrow()), "expected target sign text from world language files");
+
+			sourceLanguageActive.set(true);
+			check("Credits".equals(ParaTranzContext.translateLiteralWorldText("鸣谢").orElseThrow()), "expected source sign text derived from world language keys");
+		} finally {
+			ParaTranzContext.refreshWorldLiteralTranslations(Map.of());
+			literalTranslations.set(previousTranslations);
+			sourceLiteralTranslations.set(previousSourceTranslations);
+			sourceLanguageActive.set(previousSourceLanguageActive);
+			ParaTranzContext.updateActiveConfig(ParaTranzConfig.defaultConfig());
+		}
+	}
+
+	private static void translatesStyledLiteralSignComponents() throws Exception {
+		AtomicReference<Map<String, String>> literalTranslations = privateAtomicReference(
+				ParaTranzContext.class,
+				"ACTIVE_LITERAL_TRANSLATIONS"
+		);
+		AtomicReference<Map<String, String>> sourceLiteralTranslations = privateAtomicReference(
+				ParaTranzContext.class,
+				"ACTIVE_SOURCE_LITERAL_TRANSLATIONS"
+		);
+		AtomicBoolean sourceLanguageActive = privateAtomicBoolean(
+				Class.forName("com.amagari.translationtool.client.bilingual.BilingualLanguageController"),
+				"SOURCE_LANGUAGE_ACTIVE"
+		);
+		Map<String, String> previousTranslations = literalTranslations.get();
+		Map<String, String> previousSourceTranslations = sourceLiteralTranslations.get();
+		boolean previousSourceLanguageActive = sourceLanguageActive.get();
+		try {
+			literalTranslations.set(ParaTranzLiteralTranslations.index(Map.of(
+					"permafrost.i18n.world.block.enable_fabulous",
+					"启用高品质"
+			)));
+			sourceLiteralTranslations.set(ParaTranzLiteralTranslations.sourceIndex(
+					Map.of("permafrost.i18n.world.block.enable_fabulous", "Enable Fabulous"),
+					Map.of("permafrost.i18n.world.block.enable_fabulous", "启用高品质")
+			));
+
+			SignText sourceSignText = new SignText()
+					.setMessage(0, Component.literal("Enable ").append(Component.literal("Fabulous")));
+			SignText targetSignText = new SignText()
+					.setMessage(0, Component.literal("启用").append(Component.literal("高品质")));
+
+			sourceLanguageActive.set(false);
+			check("启用高品质".equals(ParaTranzSignText.translate(sourceSignText).getMessage(0, false).getString()), "expected styled source sign text to translate to target text");
+
+			sourceLanguageActive.set(true);
+			check("Enable Fabulous".equals(ParaTranzSignText.translate(targetSignText).getMessage(0, false).getString()), "expected styled target sign text to restore source text");
+		} finally {
+			literalTranslations.set(previousTranslations);
+			sourceLiteralTranslations.set(previousSourceTranslations);
+			sourceLanguageActive.set(previousSourceLanguageActive);
+		}
+	}
+
+	private static void buildsClickableParaTranzProjectList() {
+		List<Component> messages = WorldLanguageMessages.paraTranzClickableProjectList(
+				List.of(new ParaTranzProject(19173, "Permafrost-i18n", 3, 0, "mc")),
+				"en_us"
+		);
+
+		check(messages.size() == 2, "expected clickable project list header and one project entry");
+		ClickEvent clickEvent = messages.get(1).getSiblings().getFirst().getStyle().getClickEvent();
+		check(clickEvent != null, "expected project name to have a click event");
+		check(clickEvent.getAction() == ClickEvent.Action.RUN_COMMAND, "expected project click to run a command");
+		check("/amagari_lang paratranz pull Permafrost-i18n".equals(clickEvent.getValue()), "expected project click to pull the project");
 	}
 
 	private static void describesParaTranzStatus() {
@@ -254,5 +437,18 @@ public final class AmagariUnitChecks {
 		if (!condition) {
 			throw new AssertionError(message);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static AtomicReference<Map<String, String>> privateAtomicReference(Class<?> owner, String fieldName) throws Exception {
+		Field field = owner.getDeclaredField(fieldName);
+		field.setAccessible(true);
+		return (AtomicReference<Map<String, String>>) field.get(null);
+	}
+
+	private static AtomicBoolean privateAtomicBoolean(Class<?> owner, String fieldName) throws Exception {
+		Field field = owner.getDeclaredField(fieldName);
+		field.setAccessible(true);
+		return (AtomicBoolean) field.get(null);
 	}
 }
