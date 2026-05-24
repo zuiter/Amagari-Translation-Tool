@@ -38,15 +38,17 @@ public class ParaTranzApiClient {
 		return ParaTranzJson.parseProjects(get("/users/" + userId + "/projects", token));
 	}
 
-	public DownloadedArtifact exportAndDownload(ParaTranzProject project, String token) throws IOException, InterruptedException {
+	public DownloadedArtifact exportAndDownload(ParaTranzProject project, String token, boolean triggerExport) throws IOException, InterruptedException {
 		Optional<ParaTranzArtifact> baseline = latestArtifact(project.id(), token);
 		boolean exportRequested = false;
-		try {
-			post("/projects/" + project.id() + "/artifacts", token);
-			exportRequested = true;
-		} catch (ParaTranzApiException exception) {
-			if (!exception.permissionDenied()) {
-				throw exception;
+		if (triggerExport) {
+			try {
+				post("/projects/" + project.id() + "/artifacts", token);
+				exportRequested = true;
+			} catch (ParaTranzApiException exception) {
+				if (!exception.permissionDenied()) {
+					throw exception;
+				}
 			}
 		}
 
