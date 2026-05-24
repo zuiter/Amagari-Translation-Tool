@@ -2,7 +2,6 @@ package com.amagari.translationtool.client.bilingual;
 
 import com.amagari.translationtool.AmagariTranslationTool;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
-import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.minecraft.ChatFormatting;
@@ -13,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.phys.BlockHitResult;
@@ -33,23 +31,11 @@ public final class BilingualSourceDisplay {
 	}
 
 	public static void register() {
-		ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipFlag, lines) -> addItemTooltip(stack, lines));
 		HudLayerRegistrationCallback.EVENT.register(layeredDrawer -> layeredDrawer.attachLayerAfter(
 				IdentifiedLayer.CROSSHAIR,
 				HUD_LAYER,
 				BilingualSourceDisplay::renderBlockHud
 		));
-	}
-
-	private static void addItemTooltip(ItemStack stack, List<Component> lines) {
-		if (!BilingualLanguageController.isSourceDisplayActive() || stack.isEmpty()) {
-			return;
-		}
-
-		String translationKey = stack.getItem().getDescriptionId();
-		BilingualSourceTranslations.sourceText(translationKey)
-				.filter(sourceText -> !sourceText.isBlank())
-				.ifPresent(sourceText -> lines.add(Component.literal(sourceText).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
 	}
 
 	private static void renderBlockHud(GuiGraphics graphics, net.minecraft.client.DeltaTracker deltaTracker) {
