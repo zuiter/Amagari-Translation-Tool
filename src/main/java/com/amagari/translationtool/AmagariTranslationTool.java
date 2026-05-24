@@ -4,6 +4,7 @@ import com.amagari.translationtool.network.WorldLanguageDataPayload;
 import com.amagari.translationtool.network.WorldLanguageCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
 import com.amagari.translationtool.network.WorldLanguageRequestPayload;
+import com.amagari.translationtool.network.ParaTranzCommandPayload;
 import com.amagari.translationtool.server.WorldLanguageServer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -18,6 +19,7 @@ public class AmagariTranslationTool implements ModInitializer {
 	public void onInitialize() {
 		PayloadTypeRegistry.playS2C().register(WorldLanguageManifestPayload.TYPE, WorldLanguageManifestPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(WorldLanguageCommandPayload.TYPE, WorldLanguageCommandPayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(ParaTranzCommandPayload.TYPE, ParaTranzCommandPayload.CODEC);
 		PayloadTypeRegistry.playC2S().register(WorldLanguageRequestPayload.TYPE, WorldLanguageRequestPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(WorldLanguageDataPayload.TYPE, WorldLanguageDataPayload.CODEC);
 		WorldLanguageServer.register();

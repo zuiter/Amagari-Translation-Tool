@@ -36,6 +36,7 @@ public final class WorldLanguageContext {
 	public static void leaveWorld() {
 		CURRENT_WORLD_DIRECTORY.set(null);
 		clearRemote();
+		ParaTranzContext.refreshWorldLiteralTranslations(Map.of());
 		LAST_REPORT.set(WorldLanguageReport.notLoaded());
 	}
 
@@ -63,6 +64,7 @@ public final class WorldLanguageContext {
 			Map<String, Map<String, String>> remoteTranslations = new HashMap<>(REMOTE_TRANSLATIONS.get());
 			remoteTranslations.put(payload.languageCode(), translations);
 			REMOTE_TRANSLATIONS.set(copyTranslations(remoteTranslations));
+			ParaTranzContext.refreshWorldLiteralTranslations(remoteTranslations);
 
 			Map<String, String> pendingLanguages = new HashMap<>(PENDING_REMOTE_LANGUAGES.get());
 			pendingLanguages.remove(payload.languageCode());
@@ -80,6 +82,7 @@ public final class WorldLanguageContext {
 	public static void mergeTranslations(List<String> languageCodes, Map<String, String> translations) {
 		Map<String, Map<String, String>> remoteTranslations = REMOTE_TRANSLATIONS.get();
 		if (REMOTE_READY.get()) {
+			ParaTranzContext.refreshWorldLiteralTranslations(remoteTranslations);
 			WorldLanguageReport report = mergeRemoteTranslations(languageCodes, translations, remoteTranslations);
 			LAST_REPORT.set(report);
 			report.log();
@@ -90,11 +93,15 @@ public final class WorldLanguageContext {
 		Optional<Path> worldDirectory = getWorldDirectory();
 		if (worldDirectory.isEmpty()) {
 			LAST_REPORT.set(WorldLanguageReport.notLoaded());
+			ParaTranzContext.refreshWorldLiteralTranslations(Map.of());
 			ParaTranzContext.mergeTranslations(languageCodes, translations);
 			return;
 		}
 
-		WorldLanguageReport report = WorldLanguageReport.local(WorldLanguageFiles.loadSelectedInto(worldDirectory.get(), languageCodes, translations));
+		WorldLanguageFiles.WorldLanguageCollection worldTranslations = WorldLanguageFiles.loadAll(worldDirectory.get()).filterForLanguageCodes(languageCodes);
+		mergeLanguageTranslations(languageCodes, translations, worldTranslations.translationsByLanguage());
+		ParaTranzContext.refreshWorldLiteralTranslations(worldTranslations.translationsByLanguage());
+		WorldLanguageReport report = WorldLanguageReport.local(worldTranslations);
 		LAST_REPORT.set(report);
 		report.log();
 		ParaTranzContext.mergeTranslations(languageCodes, translations);
@@ -121,6 +128,15 @@ public final class WorldLanguageContext {
 			loadedLanguages++;
 		}
 		return WorldLanguageReport.loadedRemote(loadedLanguages, loadedEntries);
+	}
+
+	private static void mergeLanguageTranslations(List<String> languageCodes, Map<String, String> translations, Map<String, Map<String, String>> translationsByLanguage) {
+		for (String languageCode : languageCodes) {
+			Map<String, String> languageTranslations = translationsByLanguage.get(languageCode);
+			if (languageTranslations != null) {
+				translations.putAll(languageTranslations);
+			}
+		}
 	}
 
 	private static Map<String, Map<String, String>> copyTranslations(Map<String, Map<String, String>> translationsByLanguage) {

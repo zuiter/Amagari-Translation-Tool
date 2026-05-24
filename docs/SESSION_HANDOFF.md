@@ -36,10 +36,10 @@ git diff --check
 
 ## 当前已知状态
 
-- 项目是新建的可构建 Fabric 模组骨架，尚未初始化 Git 仓库。
-- 当前尚未实现玩家可见的翻译功能。
-- 当前已同步 MapSociety 风格的开发工作流文档、测试清单、发布流程和 GitHub Actions 构建流程。
-- 该骨架已通过：
+- 当前功能包括地图语言文件自动目录创建、单人加载、远程服务器/LAN manifest 同步、客户端缓存清理、客户端 ParaTranz 拉取、`/amagari_lang` 命令和中英文执行者私有反馈。
+- ParaTranz 命令包括 `/amagari_lang paratranz config`、`/amagari_lang paratranz projects` 和 `/amagari_lang paratranz pull <项目名>`；直接执行 `/amagari_lang paratranz` 只显示子命令帮助，项目名会作为可点击聊天组件执行对应 pull 命令。服务端命令树通过 `ParaTranzCommandPayload` 转发这些客户端动作，避免整合服把 `config` 当作项目名解析。配置位于 `.minecraft/config/amagari_lang/config.json`，字段包括 `paratranzApiToken`、`sourceLanguage`、`targetLanguage`、`triggerExport`、`maxCachedArtifacts` 和 `overwriteWorldLanguageFiles`，旧版 `.minecraft/config/amagari_translation_tool.json` 会自动迁移；开启覆盖后只会把目标语言写入当前本地地图的 `amagari_translation_tool/lang/<目标语言>.json`，并删除同语言旧分片文件。
+- 朋友提交的 ParaTranz 新功能以客户端侧为主：按 Token 列出账号项目、按项目名导出/下载 artifact、应用语言 JSON、缓存 artifact，并在客户端渲染固定牌子文本时应用 `*.world.block.*` 翻译。
+- 当前分支已通过：
 
 ```powershell
 .\gradlew-java21.bat build --stacktrace
