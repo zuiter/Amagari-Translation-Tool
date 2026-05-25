@@ -1,6 +1,5 @@
 package com.amagari.translationtool.client.bilingual;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -38,10 +37,6 @@ public final class BilingualItemTooltip {
 		}
 	}
 
-	private static Component sourceComponent(String sourceText) {
-		return Component.literal(sourceText).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
-	}
-
 	private static List<Component> tooltipLines(ItemStack stack) {
 		Minecraft client = Minecraft.getInstance();
 		if (client == null) {
@@ -53,9 +48,7 @@ public final class BilingualItemTooltip {
 	private static List<Component> sourceLines(List<Component> tooltipLines, ItemStack stack) {
 		List<Component> sourceLines = new ArrayList<>();
 		for (Component tooltipLine : tooltipLines) {
-			BilingualSourceText.sourceText(tooltipLine)
-					.map(BilingualItemTooltip::sourceComponent)
-					.ifPresent(sourceLines::add);
+			BilingualSourceText.sourceComponent(tooltipLine).ifPresent(sourceLines::add);
 			if (sourceLines.size() >= MAX_SOURCE_LINES) {
 				break;
 			}
@@ -63,7 +56,7 @@ public final class BilingualItemTooltip {
 		if (sourceLines.isEmpty()) {
 			BilingualSourceTranslations.sourceText(stack.getItem().getDescriptionId())
 					.filter(sourceText -> !sourceText.isBlank())
-					.map(BilingualItemTooltip::sourceComponent)
+					.map(sourceText -> Component.literal(sourceText).withStyle(stack.getHoverName().getStyle()))
 					.ifPresent(sourceLines::add);
 		}
 		return sourceLines;

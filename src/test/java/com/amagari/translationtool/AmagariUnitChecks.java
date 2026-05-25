@@ -1,5 +1,6 @@
 package com.amagari.translationtool;
 
+import com.amagari.translationtool.client.bilingual.BilingualSourceText;
 import com.amagari.translationtool.client.paratranz.ParaTranzArtifact;
 import com.amagari.translationtool.client.paratranz.ParaTranzConfig;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
@@ -13,6 +14,7 @@ import com.amagari.translationtool.client.paratranz.ParaTranzSignText;
 import com.amagari.translationtool.client.paratranz.ParaTranzZipTranslations;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
 import com.amagari.translationtool.translation.WorldLanguageMessages;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.SignText;
@@ -53,6 +55,7 @@ public final class AmagariUnitChecks {
 		resolvesSourceLiteralWorldBlockTranslations();
 		resolvesWorldFileLiteralSignTranslations();
 		translatesStyledLiteralSignComponents();
+		preservesStyledBilingualSourceComponents();
 		buildsClickableParaTranzProjectList();
 		describesParaTranzStatus();
 	}
@@ -386,6 +389,45 @@ public final class AmagariUnitChecks {
 		}
 	}
 
+	private static void preservesStyledBilingualSourceComponents() throws Exception {
+		AtomicReference<ParaTranzZipTranslations.ParseResult> activeTranslations = privateActiveTranslationsReference();
+		ParaTranzZipTranslations.ParseResult previousTranslations = activeTranslations.get();
+		try {
+			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false));
+			activeTranslations.set(new ParaTranzZipTranslations.ParseResult(
+					Map.of("en_us", Map.of("tooltip.test.damage", "Damage %s")),
+					1,
+					1,
+					0
+			));
+
+			Component argument = Component.literal("+4").withStyle(ChatFormatting.AQUA);
+			Component translated = Component.translatable("tooltip.test.damage", argument)
+					.withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC);
+			Component ownSource = BilingualSourceText.ownSourceComponent(translated).orElseThrow();
+
+			check("Damage +4".equals(ownSource.getString()), "expected source component to format translation arguments");
+			check(ownSource.getSiblings().size() == 2, "expected source component to keep literal and argument pieces separate");
+			check(
+					ownSource.getSiblings().get(0).getStyle().equals(Component.literal("").withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC).getStyle()),
+					"expected source literal text to inherit the translated component style"
+			);
+			check(
+					ownSource.getSiblings().get(1).getStyle().equals(argument.getStyle()),
+					"expected source argument to preserve its own component style"
+			);
+
+			Component tooltipLine = Component.empty()
+					.append(translated)
+					.append(Component.literal("!").withStyle(ChatFormatting.RED));
+			check("Damage +4!".equals(BilingualSourceText.sourceComponent(tooltipLine).orElseThrow().getString()), "expected source tooltip line to keep literal layout siblings");
+			check(BilingualSourceText.sourceComponent(Component.literal("纯字面量")).isEmpty(), "expected pure literal target text to be ignored");
+		} finally {
+			activeTranslations.set(previousTranslations);
+			ParaTranzContext.updateActiveConfig(ParaTranzConfig.defaultConfig());
+		}
+	}
+
 	private static void buildsClickableParaTranzProjectList() {
 		List<Component> messages = WorldLanguageMessages.paraTranzClickableProjectList(
 				List.of(new ParaTranzProject(19173, "Permafrost-i18n", 3, 0, "mc")),
@@ -450,5 +492,12 @@ public final class AmagariUnitChecks {
 		Field field = owner.getDeclaredField(fieldName);
 		field.setAccessible(true);
 		return (AtomicBoolean) field.get(null);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static AtomicReference<ParaTranzZipTranslations.ParseResult> privateActiveTranslationsReference() throws Exception {
+		Field field = ParaTranzContext.class.getDeclaredField("ACTIVE_TRANSLATIONS");
+		field.setAccessible(true);
+		return (AtomicReference<ParaTranzZipTranslations.ParseResult>) field.get(null);
 	}
 }

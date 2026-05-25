@@ -2,6 +2,8 @@ package com.amagari.translationtool.client.bilingual;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
 import java.util.Optional;
@@ -14,70 +16,92 @@ public final class BilingualSourceText {
 	private BilingualSourceText() {
 	}
 
-	public static Optional<String> sourceText(Component component) {
-		StringBuilder text = new StringBuilder();
-		boolean hasSource = appendSourceText(component, text);
-		String sourceText = text.toString().trim();
-		return hasSource && !sourceText.isBlank() ? Optional.of(sourceText) : Optional.empty();
-	}
-
-	public static Optional<String> ownSourceText(Component component) {
-		StringBuilder text = new StringBuilder();
-		boolean hasSource = appendOwnSourceText(component, text);
-		String sourceText = text.toString().trim();
-		return hasSource && !sourceText.isBlank() ? Optional.of(sourceText) : Optional.empty();
-	}
-
-	private static boolean appendSourceText(Component component, StringBuilder text) {
-		boolean hasSource = appendOwnSourceText(component, text);
-		for (Component sibling : component.getSiblings()) {
-			hasSource |= appendSourceText(sibling, text);
+	public static Optional<Component> sourceComponent(Component component) {
+		SourceComponentResult source = sourceComponentInternal(component);
+		if (!source.hasSource() || source.component().getString().isBlank()) {
+			return Optional.empty();
 		}
-		return hasSource;
+		return Optional.of(source.component());
 	}
 
-	private static boolean appendOwnSourceText(Component component, StringBuilder text) {
+	public static Optional<Component> ownSourceComponent(Component component) {
+		return ownSourceComponentInternal(component)
+				.filter(source -> !source.getString().isBlank())
+				.map(source -> (Component) source);
+	}
+
+	private static SourceComponentResult sourceComponentInternal(Component component) {
+		Optional<MutableComponent> ownSource = ownSourceComponentInternal(component);
+		MutableComponent output = ownSource.orElseGet(() -> fallbackOwnComponent(component));
+		boolean hasSource = ownSource.isPresent();
+		for (Component sibling : component.getSiblings()) {
+			SourceComponentResult siblingSource = sourceComponentInternal(sibling);
+			output.append(siblingSource.component());
+			hasSource |= siblingSource.hasSource();
+		}
+		return new SourceComponentResult(output, hasSource);
+	}
+
+	private static Optional<MutableComponent> ownSourceComponentInternal(Component component) {
 		ComponentContents contents = component.getContents();
 		if (!(contents instanceof TranslatableContents translatableContents)) {
-			return false;
+			return Optional.empty();
 		}
 
-		Optional<String> sourcePattern = BilingualSourceTranslations.sourceText(translatableContents.getKey())
-				.filter(pattern -> !pattern.isBlank());
-		if (sourcePattern.isEmpty()) {
-			return false;
-		}
-
-		text.append(applyArgs(sourcePattern.get(), translatableContents.getArgs()));
-		return true;
+		return BilingualSourceTranslations.sourceText(translatableContents.getKey())
+				.filter(pattern -> !pattern.isBlank())
+				.map(pattern -> applyArgs(pattern, translatableContents.getArgs(), component.getStyle()));
 	}
 
-	private static String applyArgs(String pattern, Object[] args) {
+	private static MutableComponent fallbackOwnComponent(Component component) {
+		if (component.getContents() instanceof TranslatableContents) {
+			return Component.empty();
+		}
+		return MutableComponent.create(component.getContents()).setStyle(component.getStyle());
+	}
+
+	private static MutableComponent applyArgs(String pattern, Object[] args, Style baseStyle) {
 		Matcher matcher = FORMAT_TOKEN.matcher(pattern);
-		StringBuilder result = new StringBuilder();
+		MutableComponent result = Component.empty();
 		int nextArg = 0;
+		int lastEnd = 0;
 		while (matcher.find()) {
-			String conversion = matcher.group(2);
-			if ("%".equals(conversion)) {
-				matcher.appendReplacement(result, Matcher.quoteReplacement("%"));
-				continue;
+			if (matcher.start() > lastEnd) {
+				appendLiteral(result, pattern.substring(lastEnd, matcher.start()), baseStyle);
 			}
 
-			int argIndex = matcher.group(1) == null ? nextArg++ : Integer.parseInt(matcher.group(1)) - 1;
-			matcher.appendReplacement(result, Matcher.quoteReplacement(argumentText(args, argIndex)));
+			String conversion = matcher.group(2);
+			if ("%".equals(conversion)) {
+				appendLiteral(result, "%", baseStyle);
+			} else {
+				int argIndex = matcher.group(1) == null ? nextArg++ : Integer.parseInt(matcher.group(1)) - 1;
+				result.append(argumentComponent(args, argIndex, baseStyle));
+			}
+			lastEnd = matcher.end();
 		}
-		matcher.appendTail(result);
-		return result.toString();
+		if (lastEnd < pattern.length()) {
+			appendLiteral(result, pattern.substring(lastEnd), baseStyle);
+		}
+		return result;
 	}
 
-	private static String argumentText(Object[] args, int index) {
+	private static void appendLiteral(MutableComponent component, String text, Style style) {
+		if (!text.isEmpty()) {
+			component.append(Component.literal(text).withStyle(style));
+		}
+	}
+
+	private static Component argumentComponent(Object[] args, int index, Style fallbackStyle) {
 		if (index < 0 || index >= args.length) {
-			return "";
+			return Component.empty();
 		}
 		Object argument = args[index];
 		if (argument instanceof Component component) {
-			return sourceText(component).orElseGet(component::getString);
+			return sourceComponent(component).orElse(component.copy());
 		}
-		return String.valueOf(argument);
+		return Component.literal(String.valueOf(argument)).withStyle(fallbackStyle);
+	}
+
+	private record SourceComponentResult(MutableComponent component, boolean hasSource) {
 	}
 }
