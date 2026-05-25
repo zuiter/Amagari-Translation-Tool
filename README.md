@@ -56,7 +56,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 示例：
 
 ```text
-/amagari_lang paratranz pull Permafrost-i18n
+/amagari_lang paratranz pull <项目名>
 ```
 
 ## 加载规则
@@ -65,7 +65,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 - 远程服务器或 LAN 加入者会按需接收 `en_us` 和当前客户端语言；切换客户端语言后，可重新加入服务器或执行 `/amagari_lang pull`。
 - 同一语言可以拆分为多个文件，例如 `zh_cn.items.json`、`zh_cn.ui.json`；匹配文件按文件名排序后加载。
 - 翻译覆盖顺序从高到低为：本次会话应用的 ParaTranz 翻译、地图/远程同步语言文件、已启用资源包、原版语言表。
-- ParaTranz 拉取结果如果包含 `*.world.block.*` 条目，会在客户端渲染时翻译匹配的固定告示牌字面量文本，适合 `Permafrost-i18n` 这类大厅告示牌，不会修改存档中的方块文本。
+- ParaTranz 拉取结果如果包含 `*.world.block.*` 条目，会在客户端渲染时翻译匹配的固定告示牌字面量文本。这个功能适合地图作者把大厅公告、任务提示、规则说明等固定文本做成可校对的语言条目；它只影响客户端显示，不会修改存档中的方块文本。
 - 单个远程语言数据 payload 上限为 4 MiB；大型地图建议只保留实际需要的语言和命名空间。
 
 ## 命令
@@ -98,11 +98,11 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 
 - 默认按 `V` 可在 ParaTranz 目标语言和配置的源语言之间切换。切到源语言时会临时暂停 ParaTranz 覆盖，让客户端回到源语言资源和地图源语言文件。
 - 默认按 `H` 可开启源文显示。
-- 物品会在原 tooltip 旁显示独立的源语言 tooltip，并尽量按原 tooltip 的可翻译行显示源文。
+- 物品会在原 tooltip 旁显示独立的源语言 tooltip，并尽量按原 tooltip 的可翻译行显示源文，同时沿用原组件的颜色、斜体和参数样式。
 - 看向带有 ParaTranz `*.world.block.*` 翻译的告示牌时，准星附近会显示源文本 HUD；普通方块名不会作为 HUD 显示。
-- 书本中的可翻译文本会在后面附加 `ⓘ`，鼠标悬停 `ⓘ` 可查看源文。
+- 书本中的可翻译文本会在后面附加 `ⓘ`，鼠标悬停 `ⓘ` 可查看源文；源文 hover 会尽量沿用原文本组件的样式。
 - 源文显示优先读取当前已启用的 Minecraft、资源包和模组自身的源语言资源，例如 `assets/*/lang/en_us.json`；找不到 key 时，才回退到本次会话已拉取的 ParaTranz 源语言条目。
-- 物品 tooltip 和书本文本必须保留可翻译 key 才能反查源文。如果内容已经被模组或地图写成纯字面量文本，客户端无法自动恢复原始源文。
+- 物品 tooltip 和书本文本必须保留可翻译 key 才能反查源文。如果内容已经被模组或地图写成纯字面量文本，客户端无法自动恢复原始源文。语言 JSON 本身不包含颜色信息，因此只能继承原组件已有的颜色和排版样式。
 
 ## 远程服务器和 LAN
 
