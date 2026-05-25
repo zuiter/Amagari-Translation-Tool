@@ -40,13 +40,13 @@ public final class BilingualBookText {
 		}
 		sourceComponent(component).ifPresent(sourceText -> copied.append(Component.literal(SOURCE_MARK)
 				.withStyle(ChatFormatting.AQUA)
-				.withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, sourceText)))));
+				.withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(sourceText)))));
 		return copied;
 	}
 
 	private static Style sourceAwareStyle(Component component) {
 		return sourceComponent(component)
-				.map(sourceText -> component.getStyle().withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, sourceText)))
+				.map(sourceText -> component.getStyle().withHoverEvent(new HoverEvent.ShowText(sourceText)))
 				.orElse(component.getStyle());
 	}
 

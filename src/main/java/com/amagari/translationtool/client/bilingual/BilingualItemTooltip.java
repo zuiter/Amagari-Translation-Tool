@@ -110,8 +110,7 @@ public final class BilingualItemTooltip {
 		int right = x + textWidth + PADDING * 2;
 		int bottom = y + boxHeight;
 
-		graphics.pose().pushPose();
-		graphics.pose().translate(0.0F, 0.0F, 400.0F);
+		graphics.nextStratum();
 		graphics.fill(x, y, right, bottom, BACKGROUND);
 		graphics.fill(x, y, right, y + 1, BORDER_TOP);
 		graphics.fill(x, bottom - 1, right, bottom, BORDER_BOTTOM);
@@ -120,7 +119,6 @@ public final class BilingualItemTooltip {
 		for (int index = 0; index < lines.size(); index++) {
 			graphics.drawString(font, lines.get(index), x + PADDING, y + PADDING + index * LINE_HEIGHT, 0xFFE0E0E0, false);
 		}
-		graphics.pose().popPose();
 	}
 
 	private static int clamp(int value, int min, int max) {

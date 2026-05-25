@@ -204,7 +204,7 @@ public final class WorldLanguageMessages {
 		return Style.EMPTY
 				.withColor(ChatFormatting.AQUA)
 				.withUnderlined(true)
-				.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
+				.withClickEvent(new ClickEvent.RunCommand(command));
 	}
 
 	public static String paraTranzProjectNotFound(String query, String languageCode) {
