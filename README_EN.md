@@ -56,7 +56,7 @@ Language file example:
 Example:
 
 ```text
-/amagari_lang paratranz pull Permafrost-i18n
+/amagari_lang paratranz pull <project-name>
 ```
 
 ## Loading Rules
@@ -65,7 +65,7 @@ Example:
 - Remote servers or LAN joining clients receive `en_us` plus the current client language on demand. If the player changes language after joining, reconnect or run `/amagari_lang pull`.
 - A language can be split across multiple files, such as `zh_cn.items.json` and `zh_cn.ui.json`; matching files are loaded in filename order.
 - Translation override order, from highest to lowest, is: the active ParaTranz pull, world/remote-synced language files, enabled resource packs, vanilla language files.
-- When an applied ParaTranz export contains `*.world.block.*` entries, matching literal sign lines are translated client-side during rendering. This is useful for fixed lobby signs such as those in `Permafrost-i18n` and does not modify saved block text.
+- When an applied ParaTranz export contains `*.world.block.*` entries, matching literal sign lines are translated client-side during rendering. This is useful for fixed map text such as lobby notices, quest hints, and rule boards. It changes only the client display and does not modify saved block text.
 - A single remote language data payload is capped at 4 MiB. Large maps should keep language files scoped to the languages and namespaces they actually use.
 
 ## Commands
@@ -98,11 +98,11 @@ Command feedback is visible only to the player who ran the command. Chinese clie
 
 - Press `V` by default to switch between the ParaTranz target language and the configured source language. Source-language mode temporarily pauses the ParaTranz override so the client falls back to source-language resources and world source-language files.
 - Press `H` by default to toggle source text helpers.
-- Items render a separate source-language tooltip beside the original tooltip and try to show source text for each translatable tooltip line.
+- Items render a separate source-language tooltip beside the original tooltip, try to show source text for each translatable tooltip line, and preserve the original component colors, italics, and argument styles where possible.
 - Signs with matching ParaTranz `*.world.block.*` literal translations show source text near the crosshair. Ordinary block names are not shown as crosshair HUD text.
-- Translatable book text gets a hoverable `ⓘ` marker after the translated text; hovering the marker shows the source text.
+- Translatable book text gets a hoverable `ⓘ` marker after the translated text; hovering the marker shows the source text and tries to preserve the original text component style.
 - Source display first reads enabled Minecraft, resource-pack, and mod source-language resources, such as `assets/*/lang/en_us.json`. It falls back to source-language entries from the ParaTranz project pulled in the current session only when the resource language table does not contain the key.
-- Item tooltips and book text must preserve translatable keys for source lookup. If a mod or map has already converted the content into plain literal text, the client cannot reconstruct the original source text automatically.
+- Item tooltips and book text must preserve translatable keys for source lookup. If a mod or map has already converted the content into plain literal text, the client cannot reconstruct the original source text automatically. Language JSON does not carry color data, so source text can only inherit colors and layout styles already present on the original components.
 
 ## Remote Servers And LAN
 

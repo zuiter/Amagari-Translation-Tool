@@ -5,7 +5,7 @@
 - Make ParaTranz project-list entries clickable so players can pull a listed project directly from chat.
 - Mirror the ParaTranz subcommand tree on the server side and forward it to the client, so integrated-server parsing no longer treats `config` as a project name.
 - Fix ParaTranz artifact parsing when `/projects/{id}/artifacts` returns a single artifact object instead of an array.
-- Apply ParaTranz `*.world.block.*` entries to matching literal sign lines during client rendering, so fixed `Permafrost-i18n` lobby signs can display their pulled translations without editing the save.
+- Apply ParaTranz `*.world.block.*` entries to matching literal sign lines during client rendering, so fixed map signs can display pulled translations without editing the save.
 - Add bilingual client controls: `V` temporarily switches to the configured source language without ParaTranz override, and `H` toggles source-language helper text for item tooltips, crosshair block/sign HUD text, and translatable book text.
 
 Amagari Translation Tool 的重要更改都会记录在这里。
@@ -24,6 +24,7 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 - 修复 ParaTranz 拉取并覆盖当前地图语言文件后，固定告示牌仍可能需要重进世界才刷新文本的问题；已知目标文本也会触发新的告示牌渲染文本对象，避免复用旧 `SignText` 渲染缓存。
 - 修复 `H` 双语源文显示的物品提示形态：容器/背包物品现在会在原物品 tooltip 旁显示独立源语言 tooltip，并按原 tooltip 的可翻译行显示源文，不再只显示物品名或追加到原 tooltip 下方。
 - 修复书本源文 hover 的自查问题：`H` 开关和源语言表刷新会使已打开书页重新拆行，书本文本源文解析也复用物品 tooltip 的参数化源文解析。
+- 优化物品和书本的双语源文显示：源文本会尽量沿用原可翻译组件的颜色、斜体和参数组件样式，不再统一强制为灰色斜体。
 
 ## [0.0.3] - 2026-05-24
 
