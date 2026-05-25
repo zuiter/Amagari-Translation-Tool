@@ -7,7 +7,7 @@
 当前项目目录：
 
 ```text
-E:\Minecraft_MOD\mod_init\amagari-translation-tool-26.1.2
+F:\Dev\Minecraft Mods\Amagari Translation Tools\1.21.4
 ```
 
 ## 稳定工作流
@@ -20,7 +20,7 @@ E:\Minecraft_MOD\mod_init\amagari-translation-tool-26.1.2
 
 ```powershell
 git diff --check
-.\gradlew.bat build --stacktrace
+.\gradlew-java21.bat build --stacktrace
 ```
 
 - 完成功能后自查冗余、风险和遗留 helper。
@@ -30,18 +30,19 @@ git diff --check
 
 - Mod id 使用 `amagari_translation_tool`。
 - 主入口类是 `com.amagari.translationtool.AmagariTranslationTool`。
-- 当前适配分支目标为 Minecraft 1.21.11，Fabric API 依赖使用 `0.141.4+1.21.11`，构建目标为 Java 21。
-- 该分支使用 `.\gradlew.bat build --stacktrace` 构建；旧的 26.1.2 版本保留在 `main` 分支。
+- 当前目标为 Minecraft 1.21.4，Fabric API 依赖使用 `0.119.4+1.21.4`。
+- `gradlew-java21.bat` 会优先使用本项目 `.gradle/local-jdks` 下的 Java 21；如果不存在，会复用本机已有的 Java 21。
 - 翻译数据、配置、客户端 UI 和网络 payload 应保持边界清晰。
 
 ## 当前已知状态
 
-- 当前功能包括地图语言文件自动目录创建、单人加载、远程服务器/LAN manifest 同步、客户端缓存清理、`/amagari_lang` 命令和中英文执行者私有反馈。
-- 当前适配分支已同步 1.21.11 的 Fabric 网络 payload、命令和客户端 mixin API。
-- 当前适配分支已通过：
+- 当前功能包括地图语言文件自动目录创建、单人加载、远程服务器/LAN manifest 同步、客户端缓存清理、客户端 ParaTranz 拉取、`/amagari_lang` 命令和中英文执行者私有反馈。
+- ParaTranz 命令包括 `/amagari_lang paratranz config`、`/amagari_lang paratranz projects` 和 `/amagari_lang paratranz pull <项目名>`；直接执行 `/amagari_lang paratranz` 只显示子命令帮助，项目名会作为可点击聊天组件执行对应 pull 命令。服务端命令树通过 `ParaTranzCommandPayload` 转发这些客户端动作，避免整合服把 `config` 当作项目名解析。配置位于 `.minecraft/config/amagari_lang/config.json`，字段包括 `paratranzApiToken`、`sourceLanguage`、`targetLanguage`、`triggerExport`、`maxCachedArtifacts` 和 `overwriteWorldLanguageFiles`，旧版 `.minecraft/config/amagari_translation_tool.json` 会自动迁移；开启覆盖后只会把目标语言写入当前本地地图的 `amagari_translation_tool/lang/<目标语言>.json`，并删除同语言旧分片文件。
+- 朋友提交的 ParaTranz 新功能以客户端侧为主：按 Token 列出账号项目、按项目名导出/下载 artifact、应用语言 JSON、缓存 artifact，并在客户端渲染固定牌子文本时应用 `*.world.block.*` 翻译。
+- 当前分支已通过：
 
 ```powershell
-.\gradlew.bat build --stacktrace
+.\gradlew-java21.bat build --stacktrace
 ```
 
 ## 新会话建议开场
@@ -50,7 +51,7 @@ git diff --check
 
 ```text
 请继续 Amagari Translation Tool 项目开发。
-项目路径：E:\Minecraft_MOD\mod_init\amagari-translation-tool-26.1.2
+项目路径：F:\Dev\Minecraft Mods\Amagari Translation Tools\1.21.4
 请先阅读 docs/SESSION_HANDOFF.md 和 AGENTS.md。
 不要自动打开客户端。
 ```

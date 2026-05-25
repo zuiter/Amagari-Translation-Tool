@@ -1,12 +1,16 @@
 package com.amagari.translationtool.translation;
 
 import com.amagari.translationtool.AmagariTranslationTool;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.minecraft.locale.Language;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -18,6 +22,7 @@ import java.util.stream.Stream;
 public final class WorldLanguageFiles {
 	public static final String LANG_DIRECTORY = "amagari_translation_tool/lang";
 
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final String JSON_EXTENSION = ".json";
 
 	private WorldLanguageFiles() {
@@ -86,6 +91,23 @@ public final class WorldLanguageFiles {
 		return WorldLanguageCollection.loaded(worldDirectory, languageDirectory, translationsByLanguage, languageFiles.size(), failedFiles);
 	}
 
+	public static void overwriteLanguages(Path worldDirectory, Map<String, Map<String, String>> translationsByLanguage) throws IOException {
+		ensureLanguageDirectory(worldDirectory);
+		Path languageDirectory = worldDirectory.resolve(LANG_DIRECTORY);
+		for (Map.Entry<String, Map<String, String>> entry : translationsByLanguage.entrySet()) {
+			String languageCode = normalizedLanguageCode(entry.getKey());
+			Path temporaryFile = Files.createTempFile(languageDirectory, languageCode + "-", ".tmp");
+			try {
+				Files.writeString(temporaryFile, GSON.toJson(entry.getValue()), StandardCharsets.UTF_8);
+				deleteExistingLanguageFiles(languageDirectory, languageCode);
+				Path languageFile = languageDirectory.resolve(languageCode + JSON_EXTENSION);
+				Files.move(temporaryFile, languageFile, StandardCopyOption.REPLACE_EXISTING);
+			} finally {
+				deleteTemporaryFile(temporaryFile);
+			}
+		}
+	}
+
 	private static LanguageLoadResult loadLanguage(Path languageDirectory, String languageCode, Map<String, String> translations) {
 		List<Path> languageFiles;
 		try (Stream<Path> files = Files.list(languageDirectory)) {
@@ -127,6 +149,33 @@ public final class WorldLanguageFiles {
 
 	private static boolean isJsonFile(Path path) {
 		return path.getFileName().toString().endsWith(JSON_EXTENSION);
+	}
+
+	private static void deleteExistingLanguageFiles(Path languageDirectory, String languageCode) throws IOException {
+		try (Stream<Path> files = Files.list(languageDirectory)) {
+			List<Path> existingLanguageFiles = files
+					.filter(Files::isRegularFile)
+					.filter(path -> isLanguageFile(path, languageCode))
+					.toList();
+			for (Path existingLanguageFile : existingLanguageFiles) {
+				Files.deleteIfExists(existingLanguageFile);
+			}
+		}
+	}
+
+	private static void deleteTemporaryFile(Path temporaryFile) {
+		try {
+			Files.deleteIfExists(temporaryFile);
+		} catch (IOException exception) {
+			AmagariTranslationTool.LOGGER.warn("Could not delete temporary world language file {}", temporaryFile, exception);
+		}
+	}
+
+	private static String normalizedLanguageCode(String languageCode) throws IOException {
+		if (languageCode == null || !languageCode.matches("[a-z0-9_]+")) {
+			throw new IOException("invalid language code: " + languageCode);
+		}
+		return languageCode;
 	}
 
 	private static String languageCode(Path path) {
@@ -231,6 +280,18 @@ public final class WorldLanguageFiles {
 			addIfPresent(filtered, "en_us");
 			addIfPresent(filtered, languageCode);
 			return loaded(worldDirectory, languageDirectory, filtered, loadedFiles, failedFiles);
+		}
+
+		public WorldLanguageCollection filterForLanguageCodes(Iterable<String> languageCodes) {
+			Map<String, Map<String, String>> filtered = new LinkedHashMap<>();
+			for (String languageCode : languageCodes) {
+				addIfPresent(filtered, languageCode);
+			}
+			return loaded(worldDirectory, languageDirectory, filtered, loadedFiles, failedFiles);
+		}
+
+		public String loadedLanguages() {
+			return String.join(", ", translationsByLanguage.keySet());
 		}
 
 		private void addIfPresent(Map<String, Map<String, String>> filtered, String languageCode) {

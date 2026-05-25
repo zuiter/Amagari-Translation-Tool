@@ -1,7 +1,9 @@
 package com.amagari.translationtool.client;
 
+import com.amagari.translationtool.client.bilingual.BilingualLanguageController;
 import com.amagari.translationtool.client.paratranz.ParaTranzClientCommands;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
+import com.amagari.translationtool.network.ParaTranzCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageCommandPayload;
 import com.amagari.translationtool.network.WorldLanguageDataPayload;
 import com.amagari.translationtool.network.WorldLanguageManifestPayload;
@@ -18,6 +20,7 @@ import java.util.Map;
 public class AmagariTranslationToolClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
+		BilingualLanguageController.register();
 		ParaTranzClientCommands.register();
 		ClientPlayNetworking.registerGlobalReceiver(WorldLanguageManifestPayload.TYPE, (payload, context) -> context.client().execute(() -> {
 			Map<String, String> missingLanguages = WorldLanguageContext.receiveRemoteManifest(context.client(), payload.languages());
@@ -36,8 +39,10 @@ public class AmagariTranslationToolClient implements ClientModInitializer {
 			}
 		}));
 		ClientPlayNetworking.registerGlobalReceiver(WorldLanguageCommandPayload.TYPE, (payload, context) -> context.client().execute(() -> handleServerCommand(payload, context.client())));
+		ClientPlayNetworking.registerGlobalReceiver(ParaTranzCommandPayload.TYPE, (payload, context) -> context.client().execute(() -> handleParaTranzCommand(payload, context.client())));
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			WorldLanguageContext.leaveWorld();
+			BilingualLanguageController.resetSessionState(client);
 			ParaTranzContext.resetSessionState();
 		});
 	}
@@ -48,6 +53,24 @@ public class AmagariTranslationToolClient implements ClientModInitializer {
 			return;
 		}
 		sendCommandFeedback(client);
+	}
+
+	private static void handleParaTranzCommand(ParaTranzCommandPayload payload, Minecraft client) {
+		if (payload.action() == ParaTranzCommandPayload.Action.HELP) {
+			ParaTranzClientCommands.showHelp(client);
+			return;
+		}
+		if (payload.action() == ParaTranzCommandPayload.Action.PROJECTS) {
+			ParaTranzClientCommands.listProjects(client);
+			return;
+		}
+		if (payload.action() == ParaTranzCommandPayload.Action.CONFIG) {
+			ParaTranzClientCommands.openConfig(client);
+			return;
+		}
+		if (payload.action() == ParaTranzCommandPayload.Action.PULL) {
+			ParaTranzClientCommands.pullProject(client, payload.argument());
+		}
 	}
 
 	private static void sendCommandFeedback(Minecraft client) {

@@ -15,7 +15,8 @@ public final class ParaTranzSmokeCheck {
 
 		ParaTranzApiClient.DownloadedArtifact artifact = new ParaTranzApiClient().exportAndDownload(
 				new ParaTranzProject(19173, "Permafrost-i18n", 3, 0, "mc"),
-				args[0].trim()
+				args[0].trim(),
+				true
 		);
 		ParaTranzZipTranslations.ParseResult translations = ParaTranzZipTranslations.parse(artifact.zipData());
 

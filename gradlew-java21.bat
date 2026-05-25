@@ -11,6 +11,10 @@ if not exist "%JAVA_HOME%\bin\java.exe" if exist "F:\Dev\Java\jdk-21.0.9\bin\jav
   set "JAVA_HOME=F:\Dev\Java\jdk-21.0.9"
 )
 
+if not exist "%JAVA_HOME%\bin\java.exe" if exist "C:\Program Files\Microsoft\jdk-21.0.6.7-hotspot\bin\java.exe" (
+  set "JAVA_HOME=C:\Program Files\Microsoft\jdk-21.0.6.7-hotspot"
+)
+
 if not exist "%JAVA_HOME%\bin\java.exe" if exist "%ORIGINAL_JAVA_HOME%\bin\java.exe" (
   set "JAVA_HOME=%ORIGINAL_JAVA_HOME%"
 )
