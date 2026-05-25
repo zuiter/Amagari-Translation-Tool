@@ -49,7 +49,7 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ### 新增
 
-- 新建面向 Minecraft 1.21.4 的 Fabric 模组骨架，模组名为 `Amagari Translation Tool`，mod id 为 `amagari_translation_tool`。
+- 新建面向 Minecraft 1.21.10 的 Fabric 模组骨架，模组名为 `Amagari Translation Tool`，mod id 为 `amagari_translation_tool`。
 - 新增 Java 21 构建脚本、Gradle/Fabric Loom 配置和基础主入口类。
 - 新增项目工作流文档、测试清单、发布说明和 GitHub Actions 构建流程。
 - 新增单人地图目录语言文件加载：`amagari_translation_tool/lang/<语言>.json` 会在进入地图后合并到客户端语言表，无需启用资源包。
