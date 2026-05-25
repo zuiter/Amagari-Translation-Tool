@@ -5,7 +5,7 @@ import com.amagari.translationtool.client.paratranz.ParaTranzConfig;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.locale.Language;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -78,7 +78,7 @@ public final class BilingualSourceTranslations {
 			String path = String.format(Locale.ROOT, "lang/%s.json", loadLanguage);
 			for (String namespace : resourceManager.getNamespaces()) {
 				try {
-					ResourceLocation location = ResourceLocation.fromNamespaceAndPath(namespace, path);
+					Identifier location = Identifier.fromNamespaceAndPath(namespace, path);
 					appendFrom(loadLanguage, resourceManager.getResourceStack(location), translations);
 				} catch (Exception exception) {
 					AmagariTranslationTool.LOGGER.warn("Skipped source language file {}:{}", namespace, path, exception);

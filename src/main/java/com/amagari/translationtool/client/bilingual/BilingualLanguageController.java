@@ -11,13 +11,13 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class BilingualLanguageController {
-	private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "keybindings"));
+	private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "keybindings"));
 	private static final String TOGGLE_SOURCE_LANGUAGE_KEY = "key.amagari_translation_tool.toggle_source_language";
 	private static final String TOGGLE_SOURCE_DISPLAY_KEY = "key.amagari_translation_tool.toggle_source_display";
 	private static final AtomicBoolean SOURCE_LANGUAGE_ACTIVE = new AtomicBoolean(false);

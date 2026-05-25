@@ -10,7 +10,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 public final class BilingualSourceDisplay {
-	private static final ResourceLocation HUD_LAYER = ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "source_language_hud");
+	private static final Identifier HUD_LAYER = Identifier.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "source_language_hud");
 	private static final int HUD_TEXT_WIDTH = 180;
 	private static final int HUD_LINE_HEIGHT = 10;
 	private static final int HUD_PADDING = 5;

@@ -4,11 +4,11 @@ import com.amagari.translationtool.AmagariTranslationTool;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record ParaTranzCommandPayload(Action action, String argument) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<ParaTranzCommandPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "paratranz_command")
+			Identifier.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "paratranz_command")
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, ParaTranzCommandPayload> CODEC = StreamCodec.ofMember(
 			ParaTranzCommandPayload::write,
