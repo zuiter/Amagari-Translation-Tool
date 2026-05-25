@@ -1,5 +1,6 @@
 package com.amagari.translationtool.client.bilingual;
 
+import com.amagari.translationtool.AmagariTranslationTool;
 import com.amagari.translationtool.client.WorldLanguageClient;
 import com.amagari.translationtool.client.paratranz.ParaTranzConfig;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
@@ -10,12 +11,13 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class BilingualLanguageController {
-	private static final String CATEGORY = "key.categories.amagari_translation_tool";
+	private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "keybindings"));
 	private static final String TOGGLE_SOURCE_LANGUAGE_KEY = "key.amagari_translation_tool.toggle_source_language";
 	private static final String TOGGLE_SOURCE_DISPLAY_KEY = "key.amagari_translation_tool.toggle_source_display";
 	private static final AtomicBoolean SOURCE_LANGUAGE_ACTIVE = new AtomicBoolean(false);

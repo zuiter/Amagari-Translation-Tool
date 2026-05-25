@@ -2,8 +2,8 @@ package com.amagari.translationtool.client.bilingual;
 
 import com.amagari.translationtool.AmagariTranslationTool;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
-import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -31,11 +31,11 @@ public final class BilingualSourceDisplay {
 	}
 
 	public static void register() {
-		HudLayerRegistrationCallback.EVENT.register(layeredDrawer -> layeredDrawer.attachLayerAfter(
-				IdentifiedLayer.CROSSHAIR,
+		HudElementRegistry.attachElementAfter(
+				VanillaHudElements.CROSSHAIR,
 				HUD_LAYER,
 				BilingualSourceDisplay::renderBlockHud
-		));
+		);
 	}
 
 	private static void renderBlockHud(GuiGraphics graphics, net.minecraft.client.DeltaTracker deltaTracker) {
@@ -95,12 +95,10 @@ public final class BilingualSourceDisplay {
 		int x = (graphics.guiWidth() - boxWidth) / 2;
 		int y = graphics.guiHeight() / 2 + 14;
 
-		graphics.pose().pushPose();
-		graphics.pose().translate(0.0F, 0.0F, 300.0F);
+		graphics.nextStratum();
 		graphics.fill(x, y, x + boxWidth, y + boxHeight, 0xAA111111);
 		for (int index = 0; index < lines.size(); index++) {
 			graphics.drawString(font, lines.get(index), x + HUD_PADDING, y + HUD_PADDING + index * HUD_LINE_HEIGHT, 0xFFE0E0E0, false);
 		}
-		graphics.pose().popPose();
 	}
 }

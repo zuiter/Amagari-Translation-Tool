@@ -437,8 +437,9 @@ public final class AmagariUnitChecks {
 		check(messages.size() == 2, "expected clickable project list header and one project entry");
 		ClickEvent clickEvent = messages.get(1).getSiblings().getFirst().getStyle().getClickEvent();
 		check(clickEvent != null, "expected project name to have a click event");
-		check(clickEvent.getAction() == ClickEvent.Action.RUN_COMMAND, "expected project click to run a command");
-		check("/amagari_lang paratranz pull Permafrost-i18n".equals(clickEvent.getValue()), "expected project click to pull the project");
+		check(clickEvent instanceof ClickEvent.RunCommand, "expected project click to run a command");
+		ClickEvent.RunCommand runCommand = (ClickEvent.RunCommand) clickEvent;
+		check("/amagari_lang paratranz pull Permafrost-i18n".equals(runCommand.command()), "expected project click to pull the project");
 	}
 
 	private static void describesParaTranzStatus() {
