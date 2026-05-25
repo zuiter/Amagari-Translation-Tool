@@ -30,7 +30,7 @@ public final class BilingualSourceDisplay {
 		HudRenderCallback.EVENT.register(BilingualSourceDisplay::renderBlockHud);
 	}
 
-	private static void renderBlockHud(GuiGraphics graphics, net.minecraft.client.DeltaTracker deltaTracker) {
+	private static void renderBlockHud(GuiGraphics graphics, float tickDelta) {
 		if (!BilingualLanguageController.isSourceDisplayActive()) {
 			return;
 		}

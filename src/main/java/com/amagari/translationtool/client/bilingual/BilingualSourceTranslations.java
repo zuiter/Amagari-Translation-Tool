@@ -78,7 +78,7 @@ public final class BilingualSourceTranslations {
 			String path = String.format(Locale.ROOT, "lang/%s.json", loadLanguage);
 			for (String namespace : resourceManager.getNamespaces()) {
 				try {
-					ResourceLocation location = ResourceLocation.fromNamespaceAndPath(namespace, path);
+					ResourceLocation location = new ResourceLocation(namespace, path);
 					appendFrom(loadLanguage, resourceManager.getResourceStack(location), translations);
 				} catch (Exception exception) {
 					AmagariTranslationTool.LOGGER.warn("Skipped source language file {}:{}", namespace, path, exception);

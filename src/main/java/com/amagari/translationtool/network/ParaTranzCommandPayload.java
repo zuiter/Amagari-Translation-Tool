@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public record ParaTranzCommandPayload(Action action, String argument) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<ParaTranzCommandPayload> TYPE = new CustomPacketPayload.Type<>(
-			ResourceLocation.fromNamespaceAndPath(AmagariTranslationTool.MOD_ID, "paratranz_command")
+			new ResourceLocation(AmagariTranslationTool.MOD_ID, "paratranz_command")
 	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, ParaTranzCommandPayload> CODEC = StreamCodec.ofMember(
 			ParaTranzCommandPayload::write,
