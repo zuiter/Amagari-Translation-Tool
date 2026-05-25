@@ -38,19 +38,19 @@ public final class BilingualBookText {
 		for (Component sibling : component.getSiblings()) {
 			copied.append(copyWithSourceHover(sibling));
 		}
-		sourceText(component).ifPresent(sourceText -> copied.append(Component.literal(SOURCE_MARK)
+		sourceComponent(component).ifPresent(sourceText -> copied.append(Component.literal(SOURCE_MARK)
 				.withStyle(ChatFormatting.AQUA)
-				.withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(sourceText))))));
+				.withStyle(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, sourceText)))));
 		return copied;
 	}
 
 	private static Style sourceAwareStyle(Component component) {
-		return sourceText(component)
-				.map(sourceText -> component.getStyle().withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(sourceText))))
+		return sourceComponent(component)
+				.map(sourceText -> component.getStyle().withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, sourceText)))
 				.orElse(component.getStyle());
 	}
 
-	private static Optional<String> sourceText(Component component) {
-		return BilingualSourceText.ownSourceText(component);
+	private static Optional<Component> sourceComponent(Component component) {
+		return BilingualSourceText.ownSourceComponent(component);
 	}
 }
