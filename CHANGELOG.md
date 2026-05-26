@@ -1,5 +1,6 @@
 # 更新日志
 
+- Fix the 26.1.2 book-view mixin so entering a world no longer disconnects with a network protocol error when Minecraft loads `BookViewScreen`.
 - Fix the Minecraft 26.1.2 sign-renderer mixin target so Fabric can apply client mixins during startup.
 - Fix the keybind category label on Minecraft versions that use registered key mapping categories.
 - Render book source-text hover boxes with a light book-page-style background for better proofreading readability.

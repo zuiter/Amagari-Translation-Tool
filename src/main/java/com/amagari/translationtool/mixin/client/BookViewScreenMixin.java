@@ -2,6 +2,7 @@ package com.amagari.translationtool.mixin.client;
 
 import com.amagari.translationtool.client.bilingual.BilingualBookText;
 import com.amagari.translationtool.client.bilingual.BilingualLanguageController;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -44,9 +45,6 @@ public class BookViewScreenMixin {
 	private static final int amagari_translation_tool$SOURCE_TOOLTIP_TEXT = 0xFF1F1308;
 
 	@Shadow
-	protected Font font;
-
-	@Shadow
 	private void visitText(ActiveTextCollector textCollector, boolean includePageNumber) {
 		throw new AssertionError();
 	}
@@ -77,10 +75,11 @@ public class BookViewScreenMixin {
 			return;
 		}
 
+		Font font = Minecraft.getInstance().font;
 		ActiveTextCollector.ClickableStyleFinder finder = new ActiveTextCollector.ClickableStyleFinder(font, mouseX, mouseY).includeInsertions(true);
 		visitText(finder, false);
 		Style hoveredStyle = finder.result();
-		BilingualBookText.sourceFromStyle(hoveredStyle).ifPresent(sourceText -> amagari_translation_tool$renderSourceTooltip(graphics, sourceText, mouseX, mouseY));
+		BilingualBookText.sourceFromStyle(hoveredStyle).ifPresent(sourceText -> amagari_translation_tool$renderSourceTooltip(graphics, font, sourceText, mouseX, mouseY));
 	}
 
 	@ModifyArg(
@@ -99,7 +98,7 @@ public class BookViewScreenMixin {
 	}
 
 	@Unique
-	private void amagari_translation_tool$renderSourceTooltip(GuiGraphicsExtractor graphics, Component sourceText, int mouseX, int mouseY) {
+	private void amagari_translation_tool$renderSourceTooltip(GuiGraphicsExtractor graphics, Font font, Component sourceText, int mouseX, int mouseY) {
 		List<FormattedCharSequence> lines = font.split(sourceText, amagari_translation_tool$SOURCE_TOOLTIP_WIDTH).stream()
 				.limit(amagari_translation_tool$SOURCE_TOOLTIP_MAX_LINES)
 				.toList();
