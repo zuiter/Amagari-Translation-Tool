@@ -1,4 +1,4 @@
-﻿# Amagari Translation Tool
+# Amagari Translation Tool
 
 Amagari Translation Tool is a Fabric translation helper mod for Minecraft 1.20.4. It loads language JSON files from world saves, remote servers/LAN hosts, or ParaTranz exports directly into the client language table without requiring a separate resource pack. It also provides bilingual switching and source-text helpers for translation review.
 
@@ -110,20 +110,3 @@ Command feedback is visible only to the player who ran the command. Chinese clie
 - When a singleplayer world is opened to LAN, the host player still reads local world files directly; joining LAN players use manifest/cache downloads.
 - Remote language cache path: `.minecraft/amagari_translation_tool/lang_cache`, partitioned by a hash of the server address.
 - Cache hits and new downloads refresh the last-used timestamp. Entries unused for 7 days are deleted automatically, and each server/language pair keeps at most the 2 most recent hashes.
-
-## Build
-
-```powershell
-.\gradlew-java17.bat build --stacktrace
-```
-
-The generated jar will be under `build/libs`.
-
-## Development Docs
-
-- `AGENTS.md`: repository-level development rules.
-- `CHANGELOG.md`: user-visible change history.
-- `docs/DEVELOPMENT.md`: development workflow.
-- `docs/TESTING.md`: verification and manual test checklists.
-- `docs/RELEASE.md`: release workflow.
-- `docs/SESSION_HANDOFF.md`: cross-session handoff notes.
