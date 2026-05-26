@@ -19,6 +19,7 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ### 修复
 
+- 修复 1.21.10 客户端加载时 `GuiGraphicsMixin` 仍注入旧版 `renderTooltip(ItemStack)` 入口导致 Mixin 应用失败的问题。
 - 修复双语源语言模式下 ParaTranz 纯文本告示牌渲染没有立即切回源文的问题；按 `V` 切到源语言后，模组会复用拉取结果建立反向索引，把已渲染成目标语言的固定大厅告示牌还原为源文本。
 - 调整双语源文显示的来源优先级：`H` 现在优先读取当前 Minecraft、资源包和模组自身的真实源语言资源，只有找不到 key 时才回退到 ParaTranz 拉取结果。
 - 修复 `H` 的告示牌源文 HUD 在本地世界只保存目标语言 `zh_cn.json` 时没有读取资源包 `en_us.json` 的问题，避免把 `*.world.block.*` key 人工拆成英文词组。
