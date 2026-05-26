@@ -13,7 +13,7 @@ import java.util.Map;
 public class ClientLanguageMixin {
 	@ModifyVariable(
 			method = "loadFrom",
-			at = @At(value = "INVOKE", target = "Ljava/util/Map;copyOf(Ljava/util/Map;)Ljava/util/Map;", shift = At.Shift.BEFORE),
+			at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableMap;copyOf(Ljava/util/Map;)Lcom/google/common/collect/ImmutableMap;", remap = false, shift = At.Shift.BEFORE),
 			ordinal = 0
 	)
 	private static Map<String, String> amagari_translation_tool$loadWorldLanguageFiles(
