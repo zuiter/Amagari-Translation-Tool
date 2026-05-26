@@ -2,7 +2,6 @@ package com.amagari.translationtool.client.bilingual;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 
@@ -11,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public final class BilingualBookText {
 	private static final String SOURCE_MARK = " ⓘ";
+	private static final String SOURCE_INSERTION_PREFIX = "amagari_translation_tool:book_source:";
 	private static final AtomicInteger CACHE_VERSION = new AtomicInteger();
 
 	private BilingualBookText() {
@@ -33,6 +33,14 @@ public final class BilingualBookText {
 		return CACHE_VERSION.get();
 	}
 
+	public static Optional<Component> sourceFromStyle(Style style) {
+		if (style == null || style.getInsertion() == null || !style.getInsertion().startsWith(SOURCE_INSERTION_PREFIX)) {
+			return Optional.empty();
+		}
+		String sourceText = style.getInsertion().substring(SOURCE_INSERTION_PREFIX.length());
+		return sourceText.isBlank() ? Optional.empty() : Optional.of(Component.literal(sourceText));
+	}
+
 	private static MutableComponent copyWithSourceHover(Component component) {
 		MutableComponent copied = MutableComponent.create(component.getContents()).setStyle(sourceAwareStyle(component));
 		for (Component sibling : component.getSiblings()) {
@@ -40,13 +48,13 @@ public final class BilingualBookText {
 		}
 		sourceComponent(component).ifPresent(sourceText -> copied.append(Component.literal(SOURCE_MARK)
 				.withStyle(ChatFormatting.AQUA)
-				.withStyle(style -> style.withHoverEvent(new HoverEvent.ShowText(sourceText)))));
+				.withStyle(style -> style.withInsertion(SOURCE_INSERTION_PREFIX + sourceText.getString()))));
 		return copied;
 	}
 
 	private static Style sourceAwareStyle(Component component) {
 		return sourceComponent(component)
-				.map(sourceText -> component.getStyle().withHoverEvent(new HoverEvent.ShowText(sourceText)))
+				.map(sourceText -> component.getStyle().withInsertion(SOURCE_INSERTION_PREFIX + sourceText.getString()))
 				.orElse(component.getStyle());
 	}
 
