@@ -1,6 +1,7 @@
 # 更新日志
 
 - Fix the keybind category label on Minecraft versions that use registered key mapping categories.
+- Render book source-text hover boxes with a light book-page-style background for better proofreading readability.
 - Fix `/amagari_lang paratranz` project-name completion and suppress the integrated-server parse error for the client-only ParaTranz command.
 - Change ParaTranz commands to `/amagari_lang paratranz projects`, `/amagari_lang paratranz config`, and `/amagari_lang paratranz pull <project>`, with bare `/amagari_lang paratranz` showing subcommand help.
 - Make ParaTranz project-list entries clickable so players can pull a listed project directly from chat.
