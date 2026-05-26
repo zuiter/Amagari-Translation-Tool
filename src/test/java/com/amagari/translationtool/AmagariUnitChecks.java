@@ -56,6 +56,7 @@ public final class AmagariUnitChecks {
 		resolvesSourceLiteralWorldBlockTranslations();
 		resolvesWorldFileLiteralSignTranslations();
 		loadsWorldSourceLanguageForLiteralSignDisplay();
+		resolvesResourceSourceLanguageForLiteralSignDisplay();
 		translatesStyledLiteralSignComponents();
 		preservesStyledBilingualSourceComponents();
 		buildsClickableParaTranzProjectList();
@@ -388,6 +389,16 @@ public final class AmagariUnitChecks {
 			sourceLiteralTranslations.set(previousSourceTranslations);
 			ParaTranzContext.updateActiveConfig(ParaTranzConfig.defaultConfig());
 		}
+	}
+
+	private static void resolvesResourceSourceLanguageForLiteralSignDisplay() {
+		Map<String, String> sourceIndex = ParaTranzLiteralTranslations.sourceIndex(
+				Map.of(),
+				Map.of("dark_ship.i18n.world.block.text_2", "谜底"),
+				key -> "dark_ship.i18n.world.block.text_2".equals(key) ? java.util.Optional.of("the") : java.util.Optional.empty()
+		);
+
+		check("the".equals(ParaTranzLiteralTranslations.translate("谜底", sourceIndex).orElseThrow()), "expected source display to use resource-pack source language text when the world has only target translations");
 	}
 
 	private static void translatesStyledLiteralSignComponents() throws Exception {

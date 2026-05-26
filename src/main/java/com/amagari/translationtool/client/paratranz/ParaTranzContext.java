@@ -2,6 +2,7 @@ package com.amagari.translationtool.client.paratranz;
 
 import com.amagari.translationtool.AmagariTranslationTool;
 import com.amagari.translationtool.client.bilingual.BilingualLanguageController;
+import com.amagari.translationtool.client.bilingual.BilingualSourceTranslations;
 import com.amagari.translationtool.client.WorldLanguageClient;
 import com.amagari.translationtool.client.WorldLanguageContext;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
@@ -316,7 +317,7 @@ public final class ParaTranzContext {
 			targetTranslations = sourceTranslations;
 		}
 		WORLD_LITERAL_TRANSLATIONS.set(ParaTranzLiteralTranslations.index(targetTranslations));
-		WORLD_SOURCE_LITERAL_TRANSLATIONS.set(ParaTranzLiteralTranslations.sourceIndex(sourceTranslations, targetTranslations));
+		WORLD_SOURCE_LITERAL_TRANSLATIONS.set(ParaTranzLiteralTranslations.sourceIndex(sourceTranslations, targetTranslations, BilingualSourceTranslations::sourceText));
 	}
 
 	private static void refreshLiteralTranslations(ParaTranzZipTranslations.ParseResult activeTranslations) {
@@ -327,7 +328,7 @@ public final class ParaTranzContext {
 			targetTranslations = sourceTranslations;
 		}
 		ACTIVE_LITERAL_TRANSLATIONS.set(ParaTranzLiteralTranslations.index(targetTranslations));
-		ACTIVE_SOURCE_LITERAL_TRANSLATIONS.set(ParaTranzLiteralTranslations.sourceIndex(sourceTranslations, targetTranslations));
+		ACTIVE_SOURCE_LITERAL_TRANSLATIONS.set(ParaTranzLiteralTranslations.sourceIndex(sourceTranslations, targetTranslations, BilingualSourceTranslations::sourceText));
 	}
 
 	private static Map<String, Map<String, String>> copyTranslations(Map<String, Map<String, String>> translationsByLanguage) {
