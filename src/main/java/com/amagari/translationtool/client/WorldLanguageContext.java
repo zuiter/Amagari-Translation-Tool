@@ -132,10 +132,11 @@ public final class WorldLanguageContext {
 			return;
 		}
 
-		WorldLanguageFiles.WorldLanguageCollection worldTranslations = WorldLanguageFiles.loadAll(worldDirectory.get()).filterForLanguageCodes(languageCodes);
-		mergeLanguageTranslations(languageCodes, translations, worldTranslations.translationsByLanguage());
-		ParaTranzContext.refreshWorldLiteralTranslations(worldTranslations.translationsByLanguage());
-		WorldLanguageReport report = WorldLanguageReport.local(worldTranslations);
+		WorldLanguageFiles.WorldLanguageCollection allWorldTranslations = WorldLanguageFiles.loadAll(worldDirectory.get());
+		WorldLanguageFiles.WorldLanguageCollection selectedWorldTranslations = allWorldTranslations.filterForLanguageCodes(languageCodes);
+		mergeLanguageTranslations(languageCodes, translations, selectedWorldTranslations.translationsByLanguage());
+		ParaTranzContext.refreshWorldLiteralTranslations(allWorldTranslations.translationsByLanguage());
+		WorldLanguageReport report = WorldLanguageReport.local(selectedWorldTranslations);
 		LAST_REPORT.set(report);
 		report.log();
 		ParaTranzContext.mergeTranslations(languageCodes, translations);
