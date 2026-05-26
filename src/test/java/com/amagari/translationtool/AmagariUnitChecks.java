@@ -1,6 +1,7 @@
 package com.amagari.translationtool;
 
 import com.amagari.translationtool.client.bilingual.BilingualSourceText;
+import com.amagari.translationtool.client.WorldLanguageContext;
 import com.amagari.translationtool.client.paratranz.ParaTranzArtifact;
 import com.amagari.translationtool.client.paratranz.ParaTranzConfig;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
@@ -54,6 +55,7 @@ public final class AmagariUnitChecks {
 		resolvesLiteralWorldBlockTranslations();
 		resolvesSourceLiteralWorldBlockTranslations();
 		resolvesWorldFileLiteralSignTranslations();
+		loadsWorldSourceLanguageForLiteralSignDisplay();
 		translatesStyledLiteralSignComponents();
 		preservesStyledBilingualSourceComponents();
 		buildsClickableParaTranzProjectList();
@@ -342,6 +344,48 @@ public final class AmagariUnitChecks {
 			literalTranslations.set(previousTranslations);
 			sourceLiteralTranslations.set(previousSourceTranslations);
 			sourceLanguageActive.set(previousSourceLanguageActive);
+			ParaTranzContext.updateActiveConfig(ParaTranzConfig.defaultConfig());
+		}
+	}
+
+	private static void loadsWorldSourceLanguageForLiteralSignDisplay() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-world-source-display");
+		Path languageDirectory = worldDirectory.resolve(WorldLanguageFiles.LANG_DIRECTORY);
+		Files.createDirectories(languageDirectory);
+		Files.writeString(
+				languageDirectory.resolve("en_us.json"),
+				"{\"dark_ship.i18n.world.block.rename_piece_solution_and_text_2\":\"the\"}",
+				StandardCharsets.UTF_8
+		);
+		Files.writeString(
+				languageDirectory.resolve("zh_cn.json"),
+				"{\"dark_ship.i18n.world.block.rename_piece_solution_and_text_2\":\"谜底\"}",
+				StandardCharsets.UTF_8
+		);
+
+		AtomicReference<Map<String, String>> literalTranslations = privateAtomicReference(
+				ParaTranzContext.class,
+				"WORLD_LITERAL_TRANSLATIONS"
+		);
+		AtomicReference<Map<String, String>> sourceLiteralTranslations = privateAtomicReference(
+				ParaTranzContext.class,
+				"WORLD_SOURCE_LITERAL_TRANSLATIONS"
+		);
+		Map<String, String> previousTranslations = literalTranslations.get();
+		Map<String, String> previousSourceTranslations = sourceLiteralTranslations.get();
+		try {
+			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false));
+			WorldLanguageContext.enterWorld(worldDirectory);
+
+			Map<String, String> mergedTranslations = new java.util.HashMap<>();
+			WorldLanguageContext.mergeTranslations(List.of("zh_cn"), mergedTranslations);
+
+			check("谜底".equals(mergedTranslations.get("dark_ship.i18n.world.block.rename_piece_solution_and_text_2")), "expected selected target language to be merged");
+			check("the".equals(ParaTranzContext.sourceLiteralWorldTextForDisplay("谜底").orElseThrow()), "expected source display to use en_us world language text");
+		} finally {
+			WorldLanguageContext.leaveWorld();
+			literalTranslations.set(previousTranslations);
+			sourceLiteralTranslations.set(previousSourceTranslations);
 			ParaTranzContext.updateActiveConfig(ParaTranzConfig.defaultConfig());
 		}
 	}
