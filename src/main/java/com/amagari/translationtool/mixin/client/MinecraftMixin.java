@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftMixin {
 	@Inject(method = "doWorldLoad", at = @At("TAIL"))
 	private void amagari_translation_tool$setWorldLanguageDirectory(
+			String levelName,
 			LevelStorageSource.LevelStorageAccess levelStorageAccess,
 			PackRepository packRepository,
 			WorldStem worldStem,
