@@ -23,9 +23,6 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 	@Final
 	protected T menu;
 
-	@Shadow
-	protected abstract boolean showTooltipWithItemInHand(ItemStack itemStack);
-
 	@Inject(method = "renderTooltip(Lnet/minecraft/client/gui/GuiGraphics;II)V", at = @At("TAIL"))
 	private void amagari_translation_tool$renderContainerSourceItemTooltip(GuiGraphics graphics, int mouseX, int mouseY, CallbackInfo callbackInfo) {
 		if (hoveredSlot == null || !hoveredSlot.hasItem()) {
@@ -33,7 +30,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 		}
 
 		ItemStack stack = hoveredSlot.getItem();
-		if (!menu.getCarried().isEmpty() && !showTooltipWithItemInHand(stack)) {
+		if (!menu.getCarried().isEmpty()) {
 			return;
 		}
 
