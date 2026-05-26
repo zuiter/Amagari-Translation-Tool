@@ -113,5 +113,19 @@ public final class ParaTranzZipTranslations {
 			}
 			return translations;
 		}
+
+		public ParseResult mappedLanguage(String sourceLanguage, String targetLanguage) {
+			if (sourceLanguage.equals(targetLanguage)) {
+				return this;
+			}
+			Map<String, String> sourceTranslations = translationsByLanguage.get(sourceLanguage);
+			if (sourceTranslations == null) {
+				return this;
+			}
+
+			Map<String, Map<String, String>> mappedTranslations = new LinkedHashMap<>(translationsByLanguage);
+			mappedTranslations.put(targetLanguage, sourceTranslations);
+			return loaded(mappedTranslations, loadedFiles, failedFiles);
+		}
 	}
 }

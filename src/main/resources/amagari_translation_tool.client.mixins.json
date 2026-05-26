@@ -3,8 +3,11 @@
 	"package": "com.amagari.translationtool.mixin.client",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"AbstractContainerScreenMixin",
 		"AbstractSignRendererMixin",
+		"BookViewScreenMixin",
 		"ClientLanguageMixin",
+		"GuiGraphicsExtractorMixin",
 		"MinecraftMixin"
 	],
 	"injectors": {

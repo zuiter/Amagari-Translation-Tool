@@ -41,6 +41,13 @@ public record WorldLanguageReport(
 		return loaded(result.worldDirectory(), result.languageCode(), result.languageDirectory(), result.loadedFiles(), result.loadedEntries(), result.failedFiles());
 	}
 
+	public static WorldLanguageReport local(WorldLanguageFiles.WorldLanguageCollection result) {
+		if (result.failed()) {
+			return new WorldLanguageReport(Status.FAILED, result.worldDirectory(), "", result.languageDirectory(), 0, 0, 0, result.error());
+		}
+		return loaded(result.worldDirectory(), result.loadedLanguages(), result.languageDirectory(), result.loadedFiles(), result.loadedEntries(), result.failedFiles());
+	}
+
 	public static WorldLanguageReport remote(Map<String, Map<String, String>> translationsByLanguage) {
 		int loadedEntries = translationsByLanguage.values().stream().mapToInt(Map::size).sum();
 		return new WorldLanguageReport(Status.REMOTE_READY, null, "", null, translationsByLanguage.size(), loadedEntries, 0, "");
