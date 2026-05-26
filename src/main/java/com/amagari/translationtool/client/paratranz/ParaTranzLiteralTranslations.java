@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 public final class ParaTranzLiteralTranslations {
 	private static final String WORLD_BLOCK_MARKER = ".world.block.";
@@ -38,6 +39,14 @@ public final class ParaTranzLiteralTranslations {
 	}
 
 	public static Map<String, String> sourceIndex(Map<String, String> sourceTranslations, Map<String, String> targetTranslations) {
+		return sourceIndex(sourceTranslations, targetTranslations, ignored -> Optional.empty());
+	}
+
+	public static Map<String, String> sourceIndex(
+			Map<String, String> sourceTranslations,
+			Map<String, String> targetTranslations,
+			Function<String, Optional<String>> sourceTextResolver
+	) {
 		Map<String, String> literalTranslations = new LinkedHashMap<>();
 		for (Map.Entry<String, String> entry : targetTranslations.entrySet()) {
 			int markerIndex = entry.getKey().indexOf(WORLD_BLOCK_MARKER);
@@ -51,6 +60,9 @@ public final class ParaTranzLiteralTranslations {
 			}
 
 			String sourceText = sourceTranslations.get(entry.getKey());
+			if (sourceText == null || sourceText.isBlank() || sourceText.equals(entry.getValue())) {
+				sourceText = sourceTextResolver.apply(entry.getKey()).orElse("");
+			}
 			if (sourceText == null || sourceText.isBlank() || sourceText.equals(entry.getValue())) {
 				sourceText = sourceTextFromKey(entry.getKey().substring(markerIndex + WORLD_BLOCK_MARKER.length()));
 			}
