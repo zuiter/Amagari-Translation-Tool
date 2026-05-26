@@ -9,15 +9,34 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public record ParaTranzConfig(String paratranzApiToken) {
+public record ParaTranzConfig(
+		String paratranzApiToken,
+		String sourceLanguage,
+		String targetLanguage,
+		boolean triggerExport,
+		int maxCachedArtifacts,
+		boolean overwriteWorldLanguageFiles
+) {
 	public static final String DEFAULT_API_TOKEN = "";
+	public static final String DEFAULT_SOURCE_LANGUAGE = "en_us";
+	public static final String DEFAULT_TARGET_LANGUAGE = "zh_cn";
+	public static final boolean DEFAULT_TRIGGER_EXPORT = true;
+	public static final int DEFAULT_MAX_CACHED_ARTIFACTS = 1;
+	public static final boolean DEFAULT_OVERWRITE_WORLD_LANGUAGE_FILES = false;
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final Path CONFIG_DIRECTORY = Path.of("config", "amagari_lang");
 	private static final String CONFIG_FILE = "config.json";
 	private static final String LEGACY_CONFIG_FILE = "amagari_translation_tool.json";
 
 	public static ParaTranzConfig defaultConfig() {
-		return new ParaTranzConfig(DEFAULT_API_TOKEN);
+		return new ParaTranzConfig(
+				DEFAULT_API_TOKEN,
+				DEFAULT_SOURCE_LANGUAGE,
+				DEFAULT_TARGET_LANGUAGE,
+				DEFAULT_TRIGGER_EXPORT,
+				DEFAULT_MAX_CACHED_ARTIFACTS,
+				DEFAULT_OVERWRITE_WORLD_LANGUAGE_FILES
+		);
 	}
 
 	public static ParaTranzConfig load(Path gameDirectory) throws IOException {
@@ -26,11 +45,15 @@ public record ParaTranzConfig(String paratranzApiToken) {
 			ParaTranzConfig config = Files.exists(legacyConfigPath(gameDirectory))
 					? read(legacyConfigPath(gameDirectory))
 					: defaultConfig();
-			save(configPath, config);
+			writeConfig(configPath, config);
 			return config;
 		}
 
 		return read(configPath);
+	}
+
+	public static void save(Path gameDirectory, ParaTranzConfig config) throws IOException {
+		writeConfig(configPath(gameDirectory), config);
 	}
 
 	public static Path configPath(Path gameDirectory) {
@@ -48,13 +71,27 @@ public record ParaTranzConfig(String paratranzApiToken) {
 			if (config == null || config.paratranzApiToken == null) {
 				return defaultConfig();
 			}
-			return config;
+			return new ParaTranzConfig(
+					config.paratranzApiToken(),
+					normalizedLanguage(config.sourceLanguage(), DEFAULT_SOURCE_LANGUAGE),
+					normalizedLanguage(config.targetLanguage(), DEFAULT_TARGET_LANGUAGE),
+					config.triggerExport(),
+					config.maxCachedArtifacts() <= 0 ? DEFAULT_MAX_CACHED_ARTIFACTS : config.maxCachedArtifacts(),
+					config.overwriteWorldLanguageFiles()
+			);
 		} catch (JsonSyntaxException exception) {
 			throw new IOException("config file is not valid JSON", exception);
 		}
 	}
 
-	private static void save(Path configPath, ParaTranzConfig config) throws IOException {
+	private static String normalizedLanguage(String language, String fallback) {
+		if (language == null || language.isBlank()) {
+			return fallback;
+		}
+		return language.trim().toLowerCase().replace('-', '_');
+	}
+
+	private static void writeConfig(Path configPath, ParaTranzConfig config) throws IOException {
 		Files.createDirectories(configPath.getParent());
 		Files.writeString(configPath, GSON.toJson(config), StandardCharsets.UTF_8);
 	}

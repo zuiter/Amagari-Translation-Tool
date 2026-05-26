@@ -40,7 +40,7 @@ Use this checklist when manually testing world language files:
 - Enter the singleplayer world and confirm the overridden text appears without enabling a resource pack.
 - Edit the file, run `/amagari_lang reload`, and confirm the changed translation appears and no red server-side command parse error is shown.
 - Run `/amagari_lang status` and confirm it reports the loaded file and entry count without a red server-side command parse error.
-- Run `/amagari_lang help` and confirm it lists `help`, `reload`, `status`, `paratranz`, `pull`, and `push` for the executing player.
+- Run `/amagari_lang help` and confirm it lists `help`, `reload`, `status`, `pull`, and `push` only for the executing player.
 - Switch the client language between Chinese and English, then confirm `/amagari_lang help`, `/amagari_lang reload`, and `/amagari_lang status` feedback follows the executing client's language.
 - Add a malformed JSON file and confirm the client keeps running while the mod logs/skips the bad file.
 - Leave the world and enter a different world without language files; confirm the previous world's overrides no longer apply after reload.
@@ -69,14 +69,29 @@ Use this checklist when manually testing remote server language delivery:
 
 Use this checklist when manually testing ParaTranz downloads:
 
-- Run `/amagari_lang paratranz` and confirm the chat feedback lists projects including `Permafrost-i18n`.
-- Run `/amagari_lang paratranz Permafrost-i18n` and confirm it downloads, caches, and applies the project translations.
-- Confirm `.minecraft/config/amagari_lang/config.json` exists and contains `paratranzApiToken`.
+- Run `/amagari_lang paratranz config` and confirm the ParaTranz settings screen opens, preserves an existing token when the field is left blank, clears the token only when `Clear token` is selected, and persists source language, target language, trigger export, cached artifact count, and the current-world overwrite checkbox.
+- Run `/amagari_lang paratranz` and confirm it shows ParaTranz subcommand help without requesting the project list.
+- Run `/amagari_lang paratranz projects`; confirm it lists projects visible to the configured token, and that clicking a project name runs the matching `/amagari_lang paratranz pull <project>` command.
+- Type `/amagari_lang paratranz pull ` and confirm tab/completion suggestions include project names from the configured API token.
+- Run `/amagari_lang paratranz pull <project>` with a visible test project and confirm it downloads, caches, and applies the project translations.
+- Enable `Overwrite current world language files`, pull a project in a local singleplayer world, and confirm `saves/<world>/amagari_translation_tool/lang/<target_language>.json` is rewritten while older split files for the same language are removed.
+- Join a remote server with overwrite enabled, pull a project, and confirm the chat reports that no writable local world directory is active while the session-only ParaTranz translations still apply.
+- In a test map with fixed literal signs covered by `*.world.block.*` entries, confirm those signs render with their pulled target-language translations after apply.
+- Confirm `.minecraft/config/amagari_lang/config.json` exists and contains `paratranzApiToken`; if `.minecraft/config/amagari_translation_tool.json` exists first, confirm it migrates into the nested config path.
 - Confirm `.minecraft/amagari_translation_tool/paratranz_cache/19173/` contains a downloaded artifact zip and metadata after a successful pull.
+- Set `maxCachedArtifacts=1`, pull the same project twice when two artifact zips are available, and confirm only the newest `artifact-*.zip` remains for that project.
 - Run `/amagari_lang status` and confirm it reports the world/remote language state plus ParaTranz project name/id, artifact id/time, loaded files, entries, active languages, and any failed files.
 - Temporarily replace the token with an invalid value and confirm the error says the token was rejected without printing the token.
-- Run `/amagari_lang paratranz <missing-project>` and confirm it shows a clean not-found or ambiguous-project message with suggestions when applicable.
-- In a singleplayer integrated-server world, run `/amagari_lang paratranz`, `/amagari_lang paratranz Permafrost-i18n`, and `/amagari_lang status`; confirm chat feedback appears and no red Brigadier parse error is shown.
+- Run `/amagari_lang paratranz pull <missing-project>` and confirm it shows a clean not-found or ambiguous-project message with suggestions when applicable.
+- In a singleplayer integrated-server world, run `/amagari_lang paratranz config`, `/amagari_lang paratranz projects`, `/amagari_lang paratranz pull <project>`, and `/amagari_lang status`; confirm the config screen opens, chat feedback appears, and no red Brigadier parse error is shown.
+- After a successful ParaTranz pull with `Trigger export` and `Overwrite current world language files` enabled, stay in the current world and confirm fixed signs backed by `*.world.block.*` entries refresh to the target text without rejoining.
+- After a successful ParaTranz pull, press `V` and confirm the client switches to the configured source language, including fixed signs backed by `*.world.block.*` literal sign entries returning from target-language text to source text; press `V` again and confirm it returns to the configured target language with ParaTranz translations active.
+- Restart the client after overwriting a ParaTranz pull into the current world's `amagari_translation_tool/lang/<target>.json`, then press `V` and confirm the same fixed signs can still switch between target text and source text from the saved world language file.
+- Press `H` with `sourceLanguage=en_us` and confirm vanilla/modded items show a separate source-language tooltip beside the original tooltip, using the real English text from enabled Minecraft/resource-pack/mod language resources for the item name and each translatable tooltip line even when the pulled ParaTranz `en_us` export contains translated target text. Confirm the source text is not appended as a normal line under the original tooltip, and that colored or italic source lines preserve the original tooltip component style where possible.
+- After a successful ParaTranz pull, press `H` and confirm the side source-language item tooltip can still fall back to source-language helper text from the pulled project when the key does not exist in enabled resource language files.
+- With `H` enabled, point at a sign that has a matching ParaTranz `*.world.block.*` literal translation and confirm a compact HUD appears near the crosshair with the source lines; point at an ordinary block and confirm no block-name HUD appears.
+- With `H` enabled, open a written book containing translatable text from the pulled project and confirm a hoverable `ⓘ` marker appears after translated text; hovering the marker should show the source text with the original text component style where possible.
+- Press `H` before pulling a ParaTranz project and confirm source display toggles cleanly; press `V` before pulling and confirm it still switches between configured source/target client languages.
 
 ## Open To LAN Language Sync Checklist
 
