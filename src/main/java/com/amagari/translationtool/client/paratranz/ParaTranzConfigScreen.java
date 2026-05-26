@@ -24,8 +24,6 @@ public class ParaTranzConfigScreen extends Screen {
 	private static final int MAX_LANGUAGE_LENGTH = 32;
 	private static final int BUTTON_WIDTH = 112;
 	private static final int BUTTON_GAP = 12;
-	private static final int CHECKBOX_HEIGHT = 20;
-	private static final int CHECKBOX_PADDING = 24;
 
 	private final Screen parent;
 	private final Path gameDirectory;
@@ -97,7 +95,10 @@ public class ParaTranzConfigScreen extends Screen {
 
 	private Checkbox addCheckbox(String label, int x, int y, boolean selected) {
 		Component message = Component.literal(label);
-		return addRenderableWidget(new Checkbox(x, y, font.width(message) + CHECKBOX_PADDING, CHECKBOX_HEIGHT, message, selected));
+		return addRenderableWidget(Checkbox.builder(message, font)
+				.pos(x, y)
+				.selected(selected)
+				.build());
 	}
 
 	private void save() {
@@ -143,7 +144,7 @@ public class ParaTranzConfigScreen extends Screen {
 
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		renderBackground(graphics);
+		renderBackground(graphics, mouseX, mouseY, partialTick);
 		graphics.drawCenteredString(font, title, width / 2, 24, TEXT_COLOR);
 		graphics.drawString(font, WorldLanguageMessages.paraConfigTokenLabel(hasToken, languageCode), token.getX(), token.getY() - 13, LABEL_COLOR);
 		graphics.drawString(font, WorldLanguageMessages.paraConfigSourceLabel(languageCode), sourceLanguage.getX(), sourceLanguage.getY() - 13, LABEL_COLOR);

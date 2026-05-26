@@ -27,7 +27,7 @@ Example command when manual client testing is requested:
 
 Expected after a clean build:
 
-- `build/libs/amagari-translation-tool-mc1.20.1-fabric-<version>.jar` exists.
+- `build/libs/amagari-translation-tool-mc1.20.4-fabric-<version>.jar` exists.
 - `fabric.mod.json` expands `${version}` and `${minecraft_dependency}` during resource processing.
 - The main entrypoint class compiles successfully.
 

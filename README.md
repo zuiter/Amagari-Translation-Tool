@@ -1,6 +1,6 @@
 ﻿# Amagari Translation Tool
 
-Amagari Translation Tool 是一个面向 Minecraft 1.20.1 Fabric 的翻译辅助模组。它可以从地图目录、远程服务器/LAN 主机或 ParaTranz 项目直接加载语言 JSON 到客户端翻译表，不需要额外打包或启用资源包；同时提供双语切换和源文显示，方便地图与模组翻译校对。
+Amagari Translation Tool 是一个面向 Minecraft 1.20.4 Fabric 的翻译辅助模组。它可以从地图目录、远程服务器/LAN 主机或 ParaTranz 项目直接加载语言 JSON 到客户端翻译表，不需要额外打包或启用资源包；同时提供双语切换和源文显示，方便地图与模组翻译校对。
 
 英文说明见 [README_EN.md](README_EN.md)。
 
@@ -14,7 +14,7 @@ Amagari Translation Tool 是一个面向 Minecraft 1.20.1 Fabric 的翻译辅助
 
 ## 安装要求
 
-- Minecraft 1.20.1
+- Minecraft 1.20.4
 - Fabric Loader 0.16.14 或更高版本
 - Fabric API
 - Java 17
