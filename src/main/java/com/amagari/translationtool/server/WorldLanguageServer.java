@@ -155,7 +155,7 @@ public final class WorldLanguageServer {
 	}
 
 	private static boolean shouldUseLocalWorldFiles(ServerPlayer player, MinecraftServer server) {
-		return server.isSingleplayer() && server.isSingleplayerOwner(player.nameAndId());
+		return server.isSingleplayer() && server.isSingleplayerOwner(player.getGameProfile());
 	}
 
 	private static String language(ServerPlayer player) {

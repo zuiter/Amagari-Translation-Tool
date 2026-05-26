@@ -61,7 +61,7 @@ public class ParaTranzConfigScreen extends Screen {
 		token = new EditBox(font, formLeft, top, fieldWidth, FIELD_HEIGHT, Component.literal(WorldLanguageMessages.paraConfigTokenHint(hasToken, languageCode)));
 		token.setMaxLength(MAX_TOKEN_LENGTH);
 		token.setHint(Component.literal(WorldLanguageMessages.paraConfigTokenHint(hasToken, languageCode)));
-		token.addFormatter((value, cursor) -> FormattedCharSequence.forward("*".repeat(value.length()), Style.EMPTY));
+		token.setFormatter((value, cursor) -> FormattedCharSequence.forward("*".repeat(value.length()), Style.EMPTY));
 		addRenderableWidget(token);
 
 		int halfWidth = fieldWidth / 2 - 6;
