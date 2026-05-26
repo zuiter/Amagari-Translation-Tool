@@ -91,6 +91,7 @@ Use this checklist when manually testing ParaTranz downloads:
 - After a successful ParaTranz pull, press `H` and confirm the side source-language item tooltip can still fall back to source-language helper text from the pulled project when the key does not exist in enabled resource language files.
 - With `H` enabled, point at a sign that has a matching ParaTranz `*.world.block.*` literal translation and confirm a compact HUD appears near the crosshair with the source lines; point at an ordinary block and confirm no block-name HUD appears.
 - With local world `en_us.json` and target-language files both containing the same `*.world.block.*` key, confirm the `H` source HUD shows the `en_us` value rather than a humanized key name.
+- With only local world `<target>.json` present after a ParaTranz overwrite, keep the original map resource pack enabled and confirm the `H` sign source HUD uses `assets/*/lang/<source>.json` source text rather than a humanized `*.world.block.*` key name.
 - With `H` enabled, open a written book containing translatable text from the pulled project and confirm a hoverable `ⓘ` marker appears after translated text; hovering the marker should show the source text in a readable light book-page-style box rather than the default dark tooltip.
 - Press `H` before pulling a ParaTranz project and confirm source display toggles cleanly; press `V` before pulling and confirm it still switches between configured source/target client languages.
 
