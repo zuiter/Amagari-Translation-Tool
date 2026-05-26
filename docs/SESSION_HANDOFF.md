@@ -20,7 +20,7 @@ E:\Minecraft_MOD\mod_init\amagari-translation-tool-26.1.2
 
 ```powershell
 git diff --check
-.\gradlew-java21.bat build --stacktrace
+.\gradlew-java17.bat build --stacktrace
 ```
 
 - 完成功能后自查冗余、风险和遗留 helper。
@@ -30,8 +30,8 @@ git diff --check
 
 - Mod id 使用 `amagari_translation_tool`。
 - 主入口类是 `com.amagari.translationtool.AmagariTranslationTool`。
-- 当前目标为 Minecraft 1.21.1，Fabric API 依赖使用 `0.116.12+1.21.1`。
-- `gradlew-java21.bat` 会优先使用本项目 `.gradle/local-jdks` 下的 Java 21；如果不存在，会复用本机已有的 Java 21。
+- 当前目标为 Minecraft 1.20.1，Fabric API 依赖使用 `0.92.9+1.20.1`。
+- `gradlew-java17.bat` 会优先使用本项目 `.gradle/local-jdks` 下的 Java 17；如果不存在，会复用本机已有的 Java 17。
 - 翻译数据、配置、客户端 UI 和网络 payload 应保持边界清晰。
 
 ## 当前已知状态
@@ -42,7 +42,7 @@ git diff --check
 - 当前分支已通过：
 
 ```powershell
-.\gradlew-java21.bat build --stacktrace
+.\gradlew-java17.bat build --stacktrace
 ```
 
 ## 新会话建议开场

@@ -9,7 +9,7 @@ This guide keeps project workflow inside the repository instead of relying only 
 3. Keep common initialization, translation data, config, client UI state, payloads, and mixins in clear ownership boundaries as they are introduced.
 4. Update player-facing documentation when usage changes.
 5. Update `CHANGELOG.md` for every completed feature or behavior change.
-6. Verify with `git diff --check` and `.\gradlew-java21.bat build --stacktrace`.
+6. Verify with `git diff --check` and `.\gradlew-java17.bat build --stacktrace`.
 
 ## Project Conventions
 

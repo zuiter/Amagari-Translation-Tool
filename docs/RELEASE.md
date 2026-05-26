@@ -46,7 +46,7 @@ mod_version=0.2.0
 
 ```powershell
 git diff --check
-.\gradlew-java21.bat build --stacktrace
+.\gradlew-java17.bat build --stacktrace
 ```
 
 5. 检查产物：

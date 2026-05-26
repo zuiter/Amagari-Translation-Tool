@@ -17,7 +17,7 @@ Amagari Translation Tool is a Fabric translation helper mod for Minecraft 1.20.1
 - Minecraft 1.20.1
 - Fabric Loader 0.16.14 or newer
 - Fabric API
-- Java 21
+- Java 17
 
 ## Quick Start
 
@@ -114,7 +114,7 @@ Command feedback is visible only to the player who ran the command. Chinese clie
 ## Build
 
 ```powershell
-.\gradlew-java21.bat build --stacktrace
+.\gradlew-java17.bat build --stacktrace
 ```
 
 The generated jar will be under `build/libs`.

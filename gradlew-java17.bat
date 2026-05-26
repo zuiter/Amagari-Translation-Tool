@@ -1,7 +1,11 @@
 @echo off
 set "PROJECT_ROOT=%~dp0"
 set "ORIGINAL_JAVA_HOME=%JAVA_HOME%"
-set "JAVA_HOME=%PROJECT_ROOT%.gradle\local-jdks\microsoft-jdk-17\jdk-17.0.12+7"
+set "JAVA_HOME=%PROJECT_ROOT%.gradle\local-jdks\jdk-17.0.2"
+
+if not exist "%JAVA_HOME%\bin\java.exe" (
+  set "JAVA_HOME=%PROJECT_ROOT%.gradle\local-jdks\microsoft-jdk-17\jdk-17.0.12+7"
+)
 
 if not exist "%JAVA_HOME%\bin\java.exe" (
   set "JAVA_HOME=%PROJECT_ROOT%..\mapsociety-template-26.1\.gradle\local-jdks\microsoft-jdk-17\jdk-17.0.12+7"
@@ -23,9 +27,9 @@ if not exist "%JAVA_HOME%\bin\java.exe" (
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 
 if "%~1"=="" (
-  call "%PROJECT_ROOT%gradlew.bat" build
+  call "%PROJECT_ROOT%gradlew.bat" -Dorg.gradle.java.installations.auto-download=false -Dorg.gradle.java.installations.paths="%JAVA_HOME%" build
 ) else (
-  call "%PROJECT_ROOT%gradlew.bat" %*
+  call "%PROJECT_ROOT%gradlew.bat" -Dorg.gradle.java.installations.auto-download=false -Dorg.gradle.java.installations.paths="%JAVA_HOME%" %*
 )
 
 exit /b %ERRORLEVEL%

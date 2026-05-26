@@ -17,7 +17,7 @@ Amagari Translation Tool 是一个面向 Minecraft 1.20.1 Fabric 的翻译辅助
 - Minecraft 1.20.1
 - Fabric Loader 0.16.14 或更高版本
 - Fabric API
-- Java 21
+- Java 17
 
 ## 快速开始
 
@@ -114,7 +114,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 ## 构建
 
 ```powershell
-.\gradlew-java21.bat build --stacktrace
+.\gradlew-java17.bat build --stacktrace
 ```
 
 生成的 jar 位于 `build/libs`。
