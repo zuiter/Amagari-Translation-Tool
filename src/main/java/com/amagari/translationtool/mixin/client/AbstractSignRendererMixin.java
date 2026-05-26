@@ -9,7 +9,11 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(AbstractSignRenderer.class)
 public class AbstractSignRendererMixin {
-	@ModifyVariable(method = "renderSignText", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+	@ModifyVariable(
+			method = "submitSignText(Lnet/minecraft/client/renderer/blockentity/state/SignRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/world/level/block/entity/SignText;)V",
+			at = @At("HEAD"),
+			argsOnly = true,
+			ordinal = 0)
 	private SignText amagari_translation_tool$translateLiteralSignText(SignText signText) {
 		return ParaTranzSignText.translate(signText);
 	}
