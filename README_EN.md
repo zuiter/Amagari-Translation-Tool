@@ -101,7 +101,7 @@ Command feedback is visible only to the player who ran the command. Chinese clie
 - Items render a separate source-language tooltip beside the original tooltip, try to show source text for each translatable tooltip line, and preserve the original component colors, italics, and argument styles where possible.
 - Signs with matching ParaTranz `*.world.block.*` literal translations show source text near the crosshair. Ordinary block names are not shown as crosshair HUD text.
 - Translatable book text gets a hoverable `ⓘ` marker after the translated text; hovering the marker shows the source text on a light background close to the vanilla book page.
-- Source display first reads enabled Minecraft, resource-pack, and mod source-language resources, such as `assets/*/lang/en_us.json`. It falls back to source-language entries from the ParaTranz project pulled in the current session only when the resource language table does not contain the key.
+- Source display, including the sign source HUD, first reads enabled Minecraft, resource-pack, and mod source-language resources, such as `assets/*/lang/en_us.json`. It falls back to source-language entries from the ParaTranz project pulled in the current session only when the resource language table does not contain the key.
 - Item tooltips and book text must preserve translatable keys for source lookup. If a mod or map has already converted the content into plain literal text, the client cannot reconstruct the original source text automatically. Language JSON does not carry color data, so item source text can only inherit colors and layout styles already present on the original components; book source boxes use a fixed page-like style for readability.
 
 ## Remote Servers And LAN
