@@ -1,6 +1,6 @@
 # Amagari Translation Tool
 
-Amagari Translation Tool is a Fabric translation helper mod for Minecraft 26.1.2. It loads language JSON files from world saves, remote servers/LAN hosts, or ParaTranz exports directly into the client language table without requiring a separate resource pack. It also provides bilingual switching and source-text helpers for translation review.
+Amagari Translation Tool is a Fabric translation helper mod for Minecraft 26.2. It loads language JSON files from world saves, remote servers/LAN hosts, or ParaTranz exports directly into the client language table without requiring a separate resource pack. It also provides bilingual switching and source-text helpers for translation review.
 
 中文说明见 [README.md](README.md)。
 
@@ -14,8 +14,8 @@ Amagari Translation Tool is a Fabric translation helper mod for Minecraft 26.1.2
 
 ## Requirements
 
-- Minecraft 26.1.2
-- Fabric Loader 0.19.2 or newer
+- Minecraft 26.2
+- Fabric Loader 0.19.3 or newer
 - Fabric API
 - Java 25
 

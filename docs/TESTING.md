@@ -27,7 +27,7 @@ Example command when manual client testing is requested:
 
 Expected after a clean build:
 
-- `build/libs/amagari-translation-tool-mc26.1.2-fabric-<version>.jar` exists.
+- `build/libs/amagari-translation-tool-mc26.2-fabric-<version>.jar` exists.
 - `fabric.mod.json` expands `${version}` and `${minecraft_dependency}` during resource processing.
 - The main entrypoint class compiles successfully.
 
@@ -93,7 +93,7 @@ Use this checklist when manually testing ParaTranz downloads:
 - With local world `en_us.json` and target-language files both containing the same `*.world.block.*` key, confirm the `H` source HUD shows the `en_us` value rather than a humanized key name.
 - With only local world `<target>.json` present after a ParaTranz overwrite, keep the original map resource pack enabled and confirm the `H` sign source HUD uses `assets/*/lang/<source>.json` source text rather than a humanized `*.world.block.*` key name.
 - With `H` enabled, open a written book containing translatable text from the pulled project and confirm a hoverable `ⓘ` marker appears after translated text; hovering the marker should show the source text in a readable light book-page-style box rather than the default dark tooltip.
-- In Minecraft 26.1.2, enter a singleplayer world after installing the mod and confirm the client reaches the world without disconnecting with a network protocol error while `BookViewScreen` is loaded.
+- In Minecraft 26.2, enter a singleplayer world after installing the mod and confirm the client reaches the world without disconnecting with a network protocol error while `BookViewScreen` is loaded.
 - Press `H` before pulling a ParaTranz project and confirm source display toggles cleanly; press `V` before pulling and confirm it still switches between configured source/target client languages.
 
 ## Open To LAN Language Sync Checklist

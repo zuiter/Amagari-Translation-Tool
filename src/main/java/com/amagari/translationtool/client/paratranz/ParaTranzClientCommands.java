@@ -115,7 +115,7 @@ public final class ParaTranzClientCommands {
 			return;
 		}
 		pendingConfigOpenTicks = -1;
-		client.setScreen(new ParaTranzConfigScreen(client.screen, client));
+		client.setScreenAndShow(new ParaTranzConfigScreen(client.gui.screen(), client));
 	}
 
 	private static CompletableFuture<Suggestions> suggestProjects(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder builder) {

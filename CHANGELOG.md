@@ -19,6 +19,10 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ## [未发布]
 
+### 变更
+
+- 适配 Minecraft 26.2 正式版，升级 Fabric Loader、Fabric API 和 Fabric Loom 构建版本。
+
 ### 修复
 
 - 修复双语源语言模式下 ParaTranz 纯文本告示牌渲染没有立即切回源文的问题；按 `V` 切到源语言后，模组会复用拉取结果建立反向索引，把已渲染成目标语言的固定大厅告示牌还原为源文本。
