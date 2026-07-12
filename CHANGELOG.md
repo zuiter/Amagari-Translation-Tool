@@ -1,5 +1,6 @@
 ﻿# 更新日志
 
+- Keep map-provided book hover/click actions on the original text while isolating ATT source proofreading to the appended `ⓘ` marker.
 - Render book source-text hover boxes with a light book-page-style background for better proofreading readability.
 - Fix source-display HUD for local world sign translations so source text can come from the world's source-language file instead of falling back to a humanized translation key.
 - Fix `/amagari_lang paratranz` project-name completion and suppress the integrated-server parse error for the client-only ParaTranz command.
@@ -18,6 +19,7 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ### 修复
 
+- 修复地图书本文字自带 hover/click 交互时与 ATT 源文校对框重叠或误触的问题；地图提示与点击继续由正文触发，ATT 源文框只由追加的 `ⓘ` 标记触发。
 - 修复 1.21.1 客户端加载语言表时 `ClientLanguageMixin` 仍指向 Java `Map.copyOf` 的问题，避免初始化游戏阶段崩溃。
 - 修复 1.21.1 客户端加载时容器 tooltip mixin shadow 了不存在的方法导致 Mixin 应用失败的问题。
 - 修复双语源语言模式下 ParaTranz 纯文本告示牌渲染没有立即切回源文的问题；按 `V` 切到源语言后，模组会复用拉取结果建立反向索引，把已渲染成目标语言的固定大厅告示牌还原为源文本。
