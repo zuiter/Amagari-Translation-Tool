@@ -21,8 +21,13 @@ public final class BilingualBookText {
 			return component;
 		}
 
-		MutableComponent copied = copyWithSourceHover(component);
-		return copied.equals(component) ? component : copied;
+		if (!containsSourceText(component)) {
+			return component;
+		}
+
+		MutableComponent flattened = Component.empty();
+		appendWithSourceHover(flattened, component, Style.EMPTY);
+		return flattened;
 	}
 
 	public static void invalidateCache() {
@@ -41,21 +46,27 @@ public final class BilingualBookText {
 		return sourceText.isBlank() ? Optional.empty() : Optional.of(Component.literal(sourceText));
 	}
 
-	private static MutableComponent copyWithSourceHover(Component component) {
-		MutableComponent copied = MutableComponent.create(component.getContents()).setStyle(sourceAwareStyle(component));
-		for (Component sibling : component.getSiblings()) {
-			copied.append(copyWithSourceHover(sibling));
+	private static boolean containsSourceText(Component component) {
+		if (sourceComponent(component).isPresent()) {
+			return true;
 		}
-		sourceComponent(component).ifPresent(sourceText -> copied.append(Component.literal(SOURCE_MARK)
-				.withStyle(ChatFormatting.AQUA)
-				.withStyle(style -> style.withInsertion(SOURCE_INSERTION_PREFIX + sourceText.getString()))));
-		return copied;
+		for (Component sibling : component.getSiblings()) {
+			if (containsSourceText(sibling)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
-	private static Style sourceAwareStyle(Component component) {
-		return sourceComponent(component)
-				.map(sourceText -> component.getStyle().withInsertion(SOURCE_INSERTION_PREFIX + sourceText.getString()))
-				.orElse(component.getStyle());
+	private static void appendWithSourceHover(MutableComponent flattened, Component component, Style inheritedStyle) {
+		Style resolvedStyle = component.getStyle().applyTo(inheritedStyle);
+		flattened.append(MutableComponent.create(component.getContents()).setStyle(resolvedStyle));
+		for (Component sibling : component.getSiblings()) {
+			appendWithSourceHover(flattened, sibling, resolvedStyle);
+		}
+		sourceComponent(component).ifPresent(sourceText -> flattened.append(Component.literal(SOURCE_MARK)
+				.withStyle(ChatFormatting.AQUA)
+				.withStyle(style -> style.withInsertion(SOURCE_INSERTION_PREFIX + sourceText.getString()))));
 	}
 
 	private static Optional<Component> sourceComponent(Component component) {
