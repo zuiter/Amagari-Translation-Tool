@@ -1,5 +1,6 @@
 # 更新日志
 
+- Keep map-provided book hover/click actions on the original text while isolating ATT source proofreading to the appended `ⓘ` marker.
 - Fix the 26.1.2 book-view mixin so entering a world no longer disconnects with a network protocol error when Minecraft loads `BookViewScreen`.
 - Fix the Minecraft 26.1.2 sign-renderer mixin target so Fabric can apply client mixins during startup.
 - Fix the keybind category label on Minecraft versions that use registered key mapping categories.
@@ -25,6 +26,7 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ### 修复
 
+- 修复地图书本文字自带 hover/click 交互时与 ATT 源文校对框重叠或误触的问题；地图提示与点击继续由正文触发，ATT 源文框只由追加的 `ⓘ` 标记触发。
 - 修复双语源语言模式下 ParaTranz 纯文本告示牌渲染没有立即切回源文的问题；按 `V` 切到源语言后，模组会复用拉取结果建立反向索引，把已渲染成目标语言的固定大厅告示牌还原为源文本。
 - 调整双语源文显示的来源优先级：`H` 现在优先读取当前 Minecraft、资源包和模组自身的真实源语言资源，只有找不到 key 时才回退到 ParaTranz 拉取结果。
 - 修复 `H` 的告示牌源文 HUD 在本地世界只保存目标语言 `zh_cn.json` 时没有读取资源包 `en_us.json` 的问题，避免把 `*.world.block.*` key 人工拆成英文词组。
