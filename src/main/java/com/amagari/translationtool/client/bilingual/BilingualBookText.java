@@ -42,7 +42,7 @@ public final class BilingualBookText {
 	}
 
 	private static MutableComponent copyWithSourceHover(Component component) {
-		MutableComponent copied = MutableComponent.create(component.getContents()).setStyle(sourceAwareStyle(component));
+		MutableComponent copied = MutableComponent.create(component.getContents()).setStyle(component.getStyle());
 		for (Component sibling : component.getSiblings()) {
 			copied.append(copyWithSourceHover(sibling));
 		}
@@ -50,12 +50,6 @@ public final class BilingualBookText {
 				.withStyle(ChatFormatting.AQUA)
 				.withStyle(style -> style.withInsertion(SOURCE_INSERTION_PREFIX + sourceText.getString()))));
 		return copied;
-	}
-
-	private static Style sourceAwareStyle(Component component) {
-		return sourceComponent(component)
-				.map(sourceText -> component.getStyle().withInsertion(SOURCE_INSERTION_PREFIX + sourceText.getString()))
-				.orElse(component.getStyle());
 	}
 
 	private static Optional<Component> sourceComponent(Component component) {

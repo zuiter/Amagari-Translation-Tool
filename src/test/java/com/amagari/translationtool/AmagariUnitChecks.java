@@ -1,5 +1,7 @@
 package com.amagari.translationtool;
 
+import com.amagari.translationtool.client.bilingual.BilingualBookText;
+import com.amagari.translationtool.client.bilingual.BilingualLanguageController;
 import com.amagari.translationtool.client.bilingual.BilingualSourceText;
 import com.amagari.translationtool.client.WorldLanguageContext;
 import com.amagari.translationtool.client.paratranz.ParaTranzArtifact;
@@ -16,8 +18,12 @@ import com.amagari.translationtool.client.paratranz.ParaTranzZipTranslations;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
 import com.amagari.translationtool.translation.WorldLanguageMessages;
 import net.minecraft.ChatFormatting;
+import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.world.level.block.entity.SignText;
 
 import java.io.ByteArrayOutputStream;
@@ -59,6 +65,7 @@ public final class AmagariUnitChecks {
 		resolvesResourceSourceLanguageForLiteralSignDisplay();
 		translatesStyledLiteralSignComponents();
 		preservesStyledBilingualSourceComponents();
+		preservesBookHoverAndClickEventsOutsideSourceMarkers();
 		buildsClickableParaTranzProjectList();
 		describesParaTranzStatus();
 	}
@@ -483,6 +490,57 @@ public final class AmagariUnitChecks {
 		}
 	}
 
+	private static void preservesBookHoverAndClickEventsOutsideSourceMarkers() throws Exception {
+		SharedConstants.tryDetectVersion();
+		Bootstrap.bootStrap();
+		AtomicReference<ParaTranzZipTranslations.ParseResult> activeTranslations = privateActiveTranslationsReference();
+		AtomicReference<ParaTranzConfig> activeConfig = privateActiveConfigReference();
+		AtomicBoolean sourceDisplayActive = privateAtomicBoolean(
+				BilingualLanguageController.class,
+				"SOURCE_DISPLAY_ACTIVE"
+		);
+		ParaTranzZipTranslations.ParseResult previousTranslations = activeTranslations.get();
+		ParaTranzConfig previousConfig = activeConfig.get();
+		boolean previousSourceDisplayActive = sourceDisplayActive.get();
+		try {
+			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false));
+			activeTranslations.set(new ParaTranzZipTranslations.ParseResult(
+					Map.of("en_us", Map.of("book.test.receiver", "Receiver")),
+					1,
+					1,
+					0
+			));
+			sourceDisplayActive.set(true);
+
+			Style mapStyle = Style.EMPTY
+					.withHoverEvent(new HoverEvent.ShowText(Component.literal("Map hint")))
+					.withClickEvent(new ClickEvent.ChangePage(2))
+					.withInsertion("map:receiver");
+			Component translated = Component.translatable("book.test.receiver").withStyle(mapStyle);
+			Component withSourceMarker = BilingualBookText.withSourceHover(translated);
+
+			check(withSourceMarker.getStyle().equals(mapStyle), "expected book text to preserve the map hover, click, and insertion style");
+			check(BilingualBookText.sourceFromStyle(withSourceMarker.getStyle()).isEmpty(), "expected ordinary book text to contain no ATT source metadata");
+			check(withSourceMarker.getSiblings().size() == 1, "expected exactly one ATT source marker");
+
+			Component marker = withSourceMarker.getSiblings().get(0);
+			check(" ⓘ".equals(marker.getString()), "expected the ATT source marker after translated book text");
+			check("Receiver".equals(BilingualBookText.sourceFromStyle(marker.getStyle()).orElseThrow().getString()), "expected only the marker to carry ATT source text");
+
+			Component resolvedMarker = withSourceMarker.toFlatList(Style.EMPTY).stream()
+					.filter(component -> " ⓘ".equals(component.getString()))
+					.findFirst()
+					.orElseThrow();
+			check(resolvedMarker.getStyle().getHoverEvent() != null, "expected the resolved marker test fixture to inherit the map hover event");
+			check(resolvedMarker.getStyle().getClickEvent() != null, "expected the resolved marker test fixture to inherit the map click event");
+			check("Receiver".equals(BilingualBookText.sourceFromStyle(resolvedMarker.getStyle()).orElseThrow().getString()), "expected resolved marker style to remain identifiable for hover/click isolation");
+		} finally {
+			activeTranslations.set(previousTranslations);
+			sourceDisplayActive.set(previousSourceDisplayActive);
+			ParaTranzContext.updateActiveConfig(previousConfig);
+		}
+	}
+
 	private static void buildsClickableParaTranzProjectList() {
 		List<Component> messages = WorldLanguageMessages.paraTranzClickableProjectList(
 				List.of(new ParaTranzProject(19173, "Permafrost-i18n", 3, 0, "mc")),
@@ -555,5 +613,12 @@ public final class AmagariUnitChecks {
 		Field field = ParaTranzContext.class.getDeclaredField("ACTIVE_TRANSLATIONS");
 		field.setAccessible(true);
 		return (AtomicReference<ParaTranzZipTranslations.ParseResult>) field.get(null);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static AtomicReference<ParaTranzConfig> privateActiveConfigReference() throws Exception {
+		Field field = ParaTranzContext.class.getDeclaredField("ACTIVE_CONFIG");
+		field.setAccessible(true);
+		return (AtomicReference<ParaTranzConfig>) field.get(null);
 	}
 }
