@@ -93,6 +93,7 @@ Use this checklist when manually testing ParaTranz downloads:
 - With local world `en_us.json` and target-language files both containing the same `*.world.block.*` key, confirm the `H` source HUD shows the `en_us` value rather than a humanized key name.
 - With only local world `<target>.json` present after a ParaTranz overwrite, keep the original map resource pack enabled and confirm the `H` sign source HUD uses `assets/*/lang/<source>.json` source text rather than a humanized `*.world.block.*` key name.
 - With `H` enabled, open a written book containing translatable text from the pulled project and confirm a hoverable `ⓘ` marker appears after translated text; hovering the marker should show the source text in a readable light book-page-style box rather than the default dark tooltip.
+- With `H` enabled, open a map-provided book whose translatable text already has a hover tooltip and click action. Confirm hovering/clicking the original text still uses the map interaction, hovering `ⓘ` shows only the ATT source box, and clicking `ⓘ` does not run the map action.
 - Press `H` before pulling a ParaTranz project and confirm source display toggles cleanly; press `V` before pulling and confirm it still switches between configured source/target client languages.
 
 ## Open To LAN Language Sync Checklist

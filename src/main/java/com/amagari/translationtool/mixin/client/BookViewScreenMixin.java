@@ -5,6 +5,7 @@ import com.amagari.translationtool.client.bilingual.BilingualLanguageController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -72,6 +74,30 @@ public class BookViewScreenMixin {
 		Font font = Minecraft.getInstance().font;
 		Style hoveredStyle = ((BookViewScreen) (Object) this).getClickedComponentStyleAt(mouseX, mouseY);
 		BilingualBookText.sourceFromStyle(hoveredStyle).ifPresent(sourceText -> amagari_translation_tool$renderSourceTooltip(graphics, font, sourceText, mouseX, mouseY));
+	}
+
+	@ModifyArg(
+			method = "render",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/client/gui/GuiGraphics;renderComponentHoverEffect(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Style;II)V"
+			),
+			index = 1
+	)
+	private Style amagari_translation_tool$keepBookHoverEffectsSeparate(Style style) {
+		return BilingualBookText.sourceFromStyle(style).isPresent() ? Style.EMPTY : style;
+	}
+
+	@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+	private void amagari_translation_tool$consumeSourceMarkerClick(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> callbackInfo) {
+		if (event.button() != 0) {
+			return;
+		}
+
+		Style clickedStyle = ((BookViewScreen) (Object) this).getClickedComponentStyleAt(event.x(), event.y());
+		if (BilingualBookText.sourceFromStyle(clickedStyle).isPresent()) {
+			callbackInfo.setReturnValue(true);
+		}
 	}
 
 	@ModifyArg(
