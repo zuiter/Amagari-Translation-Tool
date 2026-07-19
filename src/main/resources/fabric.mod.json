@@ -11,7 +11,7 @@
 	"contact": {
 		"sources": "https://github.com/zuiter/amagari-translation-tool"
 	},
-	"license": "CC0-1.0",
+	"license": "Apache-2.0",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
