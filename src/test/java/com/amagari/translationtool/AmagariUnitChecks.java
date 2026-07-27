@@ -5,6 +5,7 @@ import com.amagari.translationtool.client.bilingual.BilingualLanguageController;
 import com.amagari.translationtool.client.bilingual.BilingualSourceText;
 import com.amagari.translationtool.client.WorldLanguageContext;
 import com.amagari.translationtool.client.paratranz.ParaTranzArtifact;
+import com.amagari.translationtool.client.paratranz.ParaTranzClientCommandsChecks;
 import com.amagari.translationtool.client.paratranz.ParaTranzConfig;
 import com.amagari.translationtool.client.paratranz.ParaTranzContext;
 import com.amagari.translationtool.client.paratranz.ParaTranzJson;
@@ -44,6 +45,7 @@ public final class AmagariUnitChecks {
 	}
 
 	public static void main(String[] args) throws Exception {
+		ParaTranzClientCommandsChecks.run();
 		matchesProjectsByExactCaseInsensitiveName();
 		reportsAmbiguousProjectMatches();
 		reportsMissingProjectMatches();
