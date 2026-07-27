@@ -2,6 +2,8 @@ package com.amagari.translationtool.client.paratranz;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import java.io.IOException;
@@ -70,7 +72,12 @@ public record ParaTranzConfig(
 	private static ParaTranzConfig read(Path configPath) throws IOException {
 		try {
 			String json = Files.readString(configPath, StandardCharsets.UTF_8);
-			ParaTranzConfig config = GSON.fromJson(json, ParaTranzConfig.class);
+			var configElement = JsonParser.parseString(json);
+			if (!configElement.isJsonObject()) {
+				return defaultConfig();
+			}
+			JsonObject configJson = configElement.getAsJsonObject();
+			ParaTranzConfig config = GSON.fromJson(configJson, ParaTranzConfig.class);
 			if (config == null || config.paratranzApiToken == null) {
 				return defaultConfig();
 			}
@@ -78,7 +85,7 @@ public record ParaTranzConfig(
 					config.paratranzApiToken(),
 					normalizedLanguage(config.sourceLanguage(), DEFAULT_SOURCE_LANGUAGE),
 					normalizedLanguage(config.targetLanguage(), DEFAULT_TARGET_LANGUAGE),
-					config.triggerExport(),
+					configJson.has("triggerExport") ? config.triggerExport() : DEFAULT_TRIGGER_EXPORT,
 					config.maxCachedArtifacts() <= 0 ? DEFAULT_MAX_CACHED_ARTIFACTS : config.maxCachedArtifacts(),
 					config.overwriteWorldLanguageFiles(),
 					config.writeWorldResourcePackLanguageFile()
