@@ -51,10 +51,15 @@ public final class ParaTranzContext {
 	}
 
 	public static void listProjects(Minecraft client) {
+		Path gameDirectory = client.gameDirectory.toPath();
+		long sessionGeneration = SESSION_GENERATION.get();
 		LAST_REPORT.set(ParaTranzReport.listing(0));
 		CompletableFuture
-				.supplyAsync(() -> loadProjects(client.gameDirectory.toPath()), EXECUTOR)
+				.supplyAsync(() -> loadProjects(gameDirectory), EXECUTOR)
 				.whenComplete((projects, throwable) -> client.execute(() -> {
+					if (sessionGeneration != SESSION_GENERATION.get()) {
+						return;
+					}
 					if (throwable != null) {
 						reportFailure(client, throwable);
 						return;
