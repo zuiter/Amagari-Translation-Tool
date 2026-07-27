@@ -13,11 +13,17 @@ import net.minecraft.util.FormattedCharSequence;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParaTranzConfigScreen extends Screen {
 	private static final int FIELD_HEIGHT = 20;
 	private static final int FIELD_GAP = 40;
-	private static final int CHECKBOX_GAP = 26;
+	private static final int MAX_FORM_WIDTH = 720;
+	private static final int HORIZONTAL_MARGIN = 24;
+	private static final int CHECKBOX_HORIZONTAL_GAP = 8;
+	private static final int CHECKBOX_ROW_GAP = 26;
+	private static final int BASE_LAYOUT_HEIGHT = 208;
 	private static final int LABEL_COLOR = 0xFFA0A0A0;
 	private static final int TEXT_COLOR = 0xFFFFFFFF;
 	private static final int ERROR_COLOR = 0xFFFF7070;
@@ -57,10 +63,20 @@ public class ParaTranzConfigScreen extends Screen {
 
 	@Override
 	protected void init() {
-		formLeft = Math.max(24, (width - 360) / 2);
-		int fieldWidth = Math.min(360, width - 48);
-		int top = Math.max(40, (height - 234) / 2);
+		int fieldWidth = Math.min(MAX_FORM_WIDTH, width - HORIZONTAL_MARGIN * 2);
+		formLeft = (width - fieldWidth) / 2;
 		ParaTranzConfig current = loadConfig();
+		triggerExport = createCheckbox(WorldLanguageMessages.paraConfigTriggerExportLabel(languageCode), 0, 0, current.triggerExport());
+		overwriteWorldLanguageFiles = createCheckbox(WorldLanguageMessages.paraConfigOverwriteWorldFilesLabel(languageCode), 0, 0, current.overwriteWorldLanguageFiles());
+		writeWorldResourcePackLanguageFile = createCheckbox(WorldLanguageMessages.paraConfigWriteWorldResourcePackLabel(languageCode), 0, 0, current.writeWorldResourcePackLanguageFile());
+		List<List<Checkbox>> checkboxRows = checkboxRows(
+				fieldWidth,
+				triggerExport,
+				overwriteWorldLanguageFiles,
+				writeWorldResourcePackLanguageFile
+		);
+		int layoutHeight = BASE_LAYOUT_HEIGHT + (checkboxRows.size() - 1) * CHECKBOX_ROW_GAP;
+		int top = Math.max(40, (height - layoutHeight) / 2);
 
 		token = new EditBox(font, formLeft, top, fieldWidth, FIELD_HEIGHT, Component.literal(WorldLanguageMessages.paraConfigTokenHint(hasToken, languageCode)));
 		token.setMaxLength(MAX_TOKEN_LENGTH);
@@ -76,11 +92,10 @@ public class ParaTranzConfigScreen extends Screen {
 		maxCachedArtifacts = addField(top + FIELD_GAP * 2, 112, 4, Integer.toString(ParaTranzConfig.DEFAULT_MAX_CACHED_ARTIFACTS), Integer.toString(current.maxCachedArtifacts()));
 
 		clearToken = addCheckbox(WorldLanguageMessages.paraConfigClearTokenLabel(languageCode), rightColumnX, top + FIELD_GAP * 2, false);
-		triggerExport = addCheckbox(WorldLanguageMessages.paraConfigTriggerExportLabel(languageCode), formLeft, top + FIELD_GAP * 3, current.triggerExport());
-		overwriteWorldLanguageFiles = addCheckbox(WorldLanguageMessages.paraConfigOverwriteWorldFilesLabel(languageCode), rightColumnX, top + FIELD_GAP * 3, current.overwriteWorldLanguageFiles());
-		writeWorldResourcePackLanguageFile = addCheckbox(WorldLanguageMessages.paraConfigWriteWorldResourcePackLabel(languageCode), formLeft, top + FIELD_GAP * 3 + CHECKBOX_GAP, current.writeWorldResourcePackLanguageFile());
+		int checkboxY = top + FIELD_GAP * 3;
+		addCheckboxRows(checkboxRows, fieldWidth, checkboxY);
 
-		int buttonY = top + FIELD_GAP * 3 + CHECKBOX_GAP * 2;
+		int buttonY = checkboxY + checkboxRows.size() * CHECKBOX_ROW_GAP;
 		int buttonX = formLeft + (fieldWidth - BUTTON_WIDTH * 2 - BUTTON_GAP) / 2;
 		addRenderableWidget(Button.builder(Component.literal(WorldLanguageMessages.paraConfigSaveLabel(languageCode)), button -> save())
 				.bounds(buttonX, buttonY, BUTTON_WIDTH, 20)
@@ -99,8 +114,53 @@ public class ParaTranzConfigScreen extends Screen {
 	}
 
 	private Checkbox addCheckbox(String label, int x, int y, boolean selected) {
+		return addRenderableWidget(createCheckbox(label, x, y, selected));
+	}
+
+	private Checkbox createCheckbox(String label, int x, int y, boolean selected) {
 		Component message = Component.literal(label);
-		return addRenderableWidget(new Checkbox(x, y, font.width(message) + CHECKBOX_PADDING, CHECKBOX_HEIGHT, message, selected));
+		return new Checkbox(x, y, font.width(message) + CHECKBOX_PADDING, CHECKBOX_HEIGHT, message, selected);
+	}
+
+	private static List<List<Checkbox>> checkboxRows(int availableWidth, Checkbox... checkboxes) {
+		List<List<Checkbox>> rows = new ArrayList<>();
+		List<Checkbox> currentRow = new ArrayList<>();
+		int currentWidth = 0;
+		for (Checkbox checkbox : checkboxes) {
+			int nextWidth = currentRow.isEmpty()
+					? checkbox.getWidth()
+					: currentWidth + CHECKBOX_HORIZONTAL_GAP + checkbox.getWidth();
+			if (!currentRow.isEmpty() && nextWidth > availableWidth) {
+				rows.add(List.copyOf(currentRow));
+				currentRow.clear();
+				currentWidth = 0;
+			}
+			if (!currentRow.isEmpty()) {
+				currentWidth += CHECKBOX_HORIZONTAL_GAP;
+			}
+			currentRow.add(checkbox);
+			currentWidth += checkbox.getWidth();
+		}
+		if (!currentRow.isEmpty()) {
+			rows.add(List.copyOf(currentRow));
+		}
+		return rows;
+	}
+
+	private void addCheckboxRows(List<List<Checkbox>> rows, int availableWidth, int firstRowY) {
+		int y = firstRowY;
+		for (List<Checkbox> row : rows) {
+			int rowWidth = row.stream().mapToInt(Checkbox::getWidth).sum()
+					+ CHECKBOX_HORIZONTAL_GAP * (row.size() - 1);
+			int x = formLeft + Math.max(0, (availableWidth - rowWidth) / 2);
+			for (Checkbox checkbox : row) {
+				checkbox.setX(x);
+				checkbox.setY(y);
+				addRenderableWidget(checkbox);
+				x += checkbox.getWidth() + CHECKBOX_HORIZONTAL_GAP;
+			}
+			y += CHECKBOX_ROW_GAP;
+		}
 	}
 
 	private void save() {
