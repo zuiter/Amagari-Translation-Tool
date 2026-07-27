@@ -40,7 +40,7 @@ public final class WorldLanguageMessages {
 					"/amagari_lang paratranz config - 打开 ParaTranz 设置页面。",
 					"/amagari_lang paratranz pull <项目名> - 从 ParaTranz 拉取项目导出并应用。",
 					"/amagari_lang pull - 从服务器请求最新地图语言清单。",
-					"/amagari_lang push - OP 向在线玩家发布最新地图语言清单。"
+					"/amagari_lang push - OP 或本地单人地图房主向在线玩家发布最新地图语言清单。"
 			);
 		}
 		return List.of(
@@ -52,7 +52,7 @@ public final class WorldLanguageMessages {
 				"/amagari_lang paratranz config - Open the ParaTranz settings screen.",
 				"/amagari_lang paratranz pull <project> - Pull and apply a ParaTranz project export.",
 				"/amagari_lang pull - Request the latest world language manifest from the server.",
-				"/amagari_lang push - Publish the latest world language manifest to online players. OP only."
+				"/amagari_lang push - Publish the latest world language manifest to online players. OP or local singleplayer host."
 		);
 	}
 
