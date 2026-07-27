@@ -88,6 +88,7 @@ Command feedback is visible only to the player who ran the command. Chinese clie
 
 - Config file: `.minecraft/config/amagari_lang/config.json`.
 - Fields: `paratranzApiToken`, `sourceLanguage`, `targetLanguage`, `triggerExport`, `maxCachedArtifacts`, `overwriteWorldLanguageFiles`, and `writeWorldResourcePackLanguageFile`.
+- The ParaTranz settings form adapts to the window width. Trigger export, overwrite world language files, and write into the world resource pack share one compact row when they fit; narrow windows or longer translations wrap them automatically without overlap.
 - The legacy `.minecraft/config/amagari_translation_tool.json` path migrates automatically.
 - Saved tokens are not echoed on the settings screen. Saving an empty token field keeps the old token; selecting `Clear token` removes it.
 - Download cache: `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`. Disconnecting from a world clears only active in-memory state, not the global cache.
