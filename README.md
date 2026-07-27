@@ -88,6 +88,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 
 - 配置文件位于 `.minecraft/config/amagari_lang/config.json`。
 - 字段包括 `paratranzApiToken`、`sourceLanguage`、`targetLanguage`、`triggerExport`、`maxCachedArtifacts`、`overwriteWorldLanguageFiles` 和 `writeWorldResourcePackLanguageFile`。
+- ParaTranz 设置界面会随窗口宽度调整表单。拉取前触发导出、覆盖当前地图语言文件和写入当前地图资源包三个选项在空间足够时紧凑排列在同一行；较窄窗口或较长翻译文本会自动换行，避免重叠和越界。
 - 旧版 `.minecraft/config/amagari_translation_tool.json` 会自动迁移到新路径。
 - 已保存 Token 不会在设置页面回显；Token 输入框留空保存会保留旧 Token，勾选“清除 token”才会移除。
 - 下载缓存位于 `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`。断开世界只会清理本次会话内的激活状态，不会删除全局缓存。
