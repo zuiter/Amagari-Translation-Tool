@@ -19,6 +19,7 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ### 修复
 
+- 修复 `/amagari_lang pull` 与 `/amagari_lang push` 被客户端命令再次转发给自身、最终触发 `StackOverflowError` 并导致游戏崩溃的问题；两个服务端命令现在会安全回退到服务器命令树执行。
 - 修复地图书本文字自带 hover/click 交互时与 ATT 源文校对框重叠或误触的问题；地图提示与点击继续由正文触发，ATT 源文框只由追加的 `ⓘ` 标记触发。
 - 修复 1.20.4 客户端加载时 `ClientLanguageMixin` 仍指向 Java `Map.copyOf` 的问题，避免启动阶段语言表注入失败。
 - 修复 1.20.4 分支在 Java 17 / Minecraft 1.20.4 API 下的编译兼容问题，并将本地验证命令统一到 `gradlew-java17.bat`，避免默认构建触发无效的 JDK 下载。
