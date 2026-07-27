@@ -49,7 +49,7 @@ Language file example:
 ### ParaTranz Pull
 
 1. Run `/amagari_lang paratranz config` to open the settings screen.
-2. Enter your ParaTranz token and confirm source language, target language, export triggering, cache count, and whether successful pulls should overwrite the current world language file.
+2. Enter your ParaTranz token and confirm source language, target language, export triggering, cache count, whether successful pulls should overwrite the current world language file, and whether they should be written into the current world resource pack.
 3. Run `/amagari_lang paratranz projects` to list projects visible to the token. Project names in chat are clickable.
 4. Run `/amagari_lang paratranz pull <project>` to export, download, and apply a project by name.
 
@@ -87,11 +87,12 @@ Command feedback is visible only to the player who ran the command. Chinese clie
 ## ParaTranz Details
 
 - Config file: `.minecraft/config/amagari_lang/config.json`.
-- Fields: `paratranzApiToken`, `sourceLanguage`, `targetLanguage`, `triggerExport`, `maxCachedArtifacts`, and `overwriteWorldLanguageFiles`.
+- Fields: `paratranzApiToken`, `sourceLanguage`, `targetLanguage`, `triggerExport`, `maxCachedArtifacts`, `overwriteWorldLanguageFiles`, and `writeWorldResourcePackLanguageFile`.
 - The legacy `.minecraft/config/amagari_translation_tool.json` path migrates automatically.
 - Saved tokens are not echoed on the settings screen. Saving an empty token field keeps the old token; selecting `Clear token` removes it.
 - Download cache: `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`. Disconnecting from a world clears only active in-memory state, not the global cache.
 - When `Overwrite current world language files` is enabled, the target language is written to the current local world's `amagari_translation_tool/lang/<target>.json`, and older split files for the same language, such as `zh_cn.items.json`, are removed. If no writable local world directory is active, overwrite is skipped and translations apply only to the current client session.
+- When `Write into current world resource pack` is enabled, the target language is written into the local world's `resources.zip`; a development folder pack at `<world>/resources` is also supported. If `assets/<namespace>/lang/<target>.json` exists, unrelated keys are preserved and matching keys are replaced by the ParaTranz result. If the `lang` directory exists without the target language, the file is added there. If no `lang` directory exists, it is created under an existing asset namespace. Replaced ZIPs or language files receive an `.att-backup` backup. On Windows, if an active `resources.zip` is locked by the game, the update is staged as `.att-pending`, replaced automatically after leaving the world, and retried on the next client start if necessary. Writing is skipped when the world has no local resource pack or the client is connected to a remote server.
 - `/amagari_lang paratranz pull <project>` supports project-name completions from the projects visible to the configured token.
 
 ## Bilingual Review

@@ -49,7 +49,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 ### 使用 ParaTranz 拉取
 
 1. 执行 `/amagari_lang paratranz config` 打开设置页面。
-2. 填入 ParaTranz Token，并确认源语言、目标语言、是否拉取前触发导出、缓存数量和是否覆盖当前地图语言文件。
+2. 填入 ParaTranz Token，并确认源语言、目标语言、是否拉取前触发导出、缓存数量、是否覆盖当前地图语言文件，以及是否写入当前地图资源包。
 3. 执行 `/amagari_lang paratranz projects` 列出 Token 可访问的项目；聊天里的项目名可以点击直接拉取。
 4. 执行 `/amagari_lang paratranz pull <项目名>` 按项目名导出、下载并应用语言 JSON。
 
@@ -87,11 +87,12 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 ## ParaTranz 细节
 
 - 配置文件位于 `.minecraft/config/amagari_lang/config.json`。
-- 字段包括 `paratranzApiToken`、`sourceLanguage`、`targetLanguage`、`triggerExport`、`maxCachedArtifacts` 和 `overwriteWorldLanguageFiles`。
+- 字段包括 `paratranzApiToken`、`sourceLanguage`、`targetLanguage`、`triggerExport`、`maxCachedArtifacts`、`overwriteWorldLanguageFiles` 和 `writeWorldResourcePackLanguageFile`。
 - 旧版 `.minecraft/config/amagari_translation_tool.json` 会自动迁移到新路径。
 - 已保存 Token 不会在设置页面回显；Token 输入框留空保存会保留旧 Token，勾选“清除 token”才会移除。
 - 下载缓存位于 `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`。断开世界只会清理本次会话内的激活状态，不会删除全局缓存。
 - 勾选“覆盖当前地图语言文件”后，目标语言会写入当前本地地图的 `amagari_translation_tool/lang/<目标语言>.json`，并删除同语言旧分片文件，例如 `zh_cn.items.json`。如果当前没有可写入的本地地图目录，则跳过覆盖，只应用到本次客户端会话。
+- 勾选“写入当前地图资源包”后，目标语言会写入当前本地地图的 `resources.zip`；开发用文件夹资源包也可放在地图目录的 `resources` 文件夹中。已有 `assets/<命名空间>/lang/<目标语言>.json` 时会保留其他 key，仅由 ParaTranz 结果覆盖同名 key；已有 `lang` 目录但缺少目标语言文件时会直接新增；完全没有 `lang` 目录时会在现有资源命名空间下自动创建。被替换的 ZIP 或旧语言文件会保留 `.att-backup` 备份。Windows 上若活动中的 `resources.zip` 正被游戏占用，更新会暂存为 `.att-pending`，退出地图后自动替换，未完成时会在下次启动游戏时重试。如果地图没有本地资源包或当前连接的是远程服务器，则跳过资源包写入。
 - `/amagari_lang paratranz pull <项目名>` 支持项目名补全；补全来源是当前 Token 可访问的项目。
 
 ## 双语校对
