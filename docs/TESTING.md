@@ -94,6 +94,7 @@ Use this checklist when manually testing ParaTranz downloads:
 - Temporarily replace the token with an invalid value and confirm the error says the token was rejected without printing the token.
 - Run `/amagari_lang paratranz pull <missing-project>` and confirm it shows a clean not-found or ambiguous-project message with suggestions when applicable.
 - In a singleplayer integrated-server world, run `/amagari_lang paratranz config`, `/amagari_lang paratranz projects`, `/amagari_lang paratranz pull <project>`, and `/amagari_lang status`; confirm the config screen opens, chat feedback appears, and no red Brigadier parse error is shown.
+- Create a singleplayer world with cheats disabled, open `/amagari_lang` completion as the world owner, and confirm `push` is visible and `/amagari_lang push` executes without a permission error.
 - After a successful ParaTranz pull with `Trigger export` and `Overwrite current world language files` enabled, stay in the current world and confirm fixed signs backed by `*.world.block.*` entries refresh to the target text without rejoining.
 - In Minecraft 26.2, place or load an existing text display entity whose translatable component is covered by the pulled language file. Pull the project and confirm the display changes on the next rendered frame without rejoining; change the translation and pull again to confirm the same entity refreshes a second time.
 - In Minecraft 26.2, repeat with an existing sign whose line is a translatable component and confirm its cached rendered lines also refresh immediately after each pull.
@@ -119,6 +120,6 @@ Use this checklist when manually testing a singleplayer world opened to LAN:
 - Confirm the host still reads local world language files directly.
 - Confirm the joining LAN client receives the language manifest, downloads missing cached data, and shows the overridden text without enabling a resource pack.
 - Run `/amagari_lang pull` from the joining LAN client and confirm it can request a fresh manifest from the host.
-- Edit a host-side language file, run `/amagari_lang push` as the host/operator, and confirm the joining LAN client receives only changed language data.
+- With cheats disabled for the original singleplayer world, edit a host-side language file, run `/amagari_lang push` as the LAN host, and confirm the joining LAN client receives only changed language data. Confirm a non-OP joining player still cannot run `push`.
 
 Do not mark remote or LAN sync as manually tested unless an actual dedicated server or LAN host/client pair was used.
