@@ -29,10 +29,12 @@ import net.minecraft.server.Bootstrap;
 import net.minecraft.world.level.block.entity.SignText;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.lang.reflect.Field;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,8 @@ public final class AmagariUnitChecks {
 		mergesTargetLanguageIntoZipResourcePack();
 		mergesSubsequentWriteFromPendingZipResourcePack();
 		finishesPendingZipResourcePackWrite();
+		keepsNewerResourcePackInsteadOfStalePendingWrite();
+		rejectsTraversalShapedZipEntries();
 		resolvesLiteralWorldBlockTranslations();
 		resolvesSourceLiteralWorldBlockTranslations();
 		resolvesWorldFileLiteralSignTranslations();
@@ -221,6 +225,7 @@ public final class AmagariUnitChecks {
 
 		Path configPath = gameDirectory.resolve("config").resolve("amagari_lang").resolve("config.json");
 		check("legacy-token".equals(config.paratranzApiToken()), "expected legacy token to be loaded");
+		check(config.triggerExport(), "expected legacy config without triggerExport to keep the default enabled value");
 		check(!config.overwriteWorldLanguageFiles(), "expected migrated config to keep world language overwrite disabled");
 		check(!config.writeWorldResourcePackLanguageFile(), "expected migrated config to keep resource-pack writing disabled");
 		check(Files.exists(configPath), "expected legacy config to be migrated to nested config path");
@@ -396,6 +401,7 @@ public final class AmagariUnitChecks {
 		Path pendingResourcePack = worldDirectory.resolve("resources.zip.att-pending");
 		Files.write(resourcePack, zip(Map.of("pack.mcmeta", "{\"description\":\"old\"}")));
 		Files.write(pendingResourcePack, zip(Map.of("pack.mcmeta", "{\"description\":\"new\"}")));
+		Files.setLastModifiedTime(pendingResourcePack, FileTime.fromMillis(Files.getLastModifiedTime(resourcePack).toMillis() + 2_000L));
 
 		check(WorldResourcePackLanguages.finishPendingWrite(worldDirectory), "expected a pending resource-pack update to be completed");
 		check(readZipEntry(resourcePack, "pack.mcmeta").contains("\"description\":\"new\""), "expected the pending resource pack to replace the current pack");
@@ -415,6 +421,7 @@ public final class AmagariUnitChecks {
 				"pack.mcmeta", "{\"description\":\"pending\"}",
 				"assets/permafrost/lang/zh_cn.json", "{\"map.original\":\"原始\",\"map.first\":\"第一次\"}"
 		)));
+		Files.setLastModifiedTime(pendingResourcePack, FileTime.fromMillis(Files.getLastModifiedTime(resourcePack).toMillis() + 2_000L));
 
 		WorldResourcePackLanguages.writeTargetLanguage(
 				worldDirectory,
@@ -426,6 +433,53 @@ public final class AmagariUnitChecks {
 		check(languageJson.contains("第一次"), "expected a later write to preserve translations from the pending resource pack");
 		check(languageJson.contains("第二次"), "expected a later write to add its own translations");
 		check(Files.notExists(pendingResourcePack), "expected a successful direct replacement to remove stale pending data");
+	}
+
+	private static void keepsNewerResourcePackInsteadOfStalePendingWrite() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-stale-pending");
+		Path resourcePack = worldDirectory.resolve("resources.zip");
+		Path pendingResourcePack = worldDirectory.resolve("resources.zip.att-pending");
+		Files.write(pendingResourcePack, zip(Map.of(
+				"pack.mcmeta", "{\"description\":\"stale pending\"}",
+				"assets/permafrost/lang/zh_cn.json", "{\"map.pending\":\"旧暂存\"}"
+		)));
+		Files.write(resourcePack, zip(Map.of(
+				"pack.mcmeta", "{\"description\":\"new current\"}",
+				"assets/permafrost/lang/zh_cn.json", "{\"map.current\":\"当前\"}"
+		)));
+		Files.setLastModifiedTime(resourcePack, FileTime.fromMillis(Files.getLastModifiedTime(pendingResourcePack).toMillis() + 2_000L));
+
+		WorldResourcePackLanguages.writeTargetLanguage(
+				worldDirectory,
+				"zh_cn",
+				Map.of("map.new", "新译文")
+		).orElseThrow();
+
+		String languageJson = readZipEntry(resourcePack, "assets/permafrost/lang/zh_cn.json");
+		check(readZipEntry(resourcePack, "pack.mcmeta").contains("new current"), "expected newer current resource-pack entries to win over stale pending data");
+		check(languageJson.contains("当前"), "expected newer current language entries to be preserved");
+		check(languageJson.contains("新译文"), "expected the latest pull to be merged into the newer current resource pack");
+		check(Files.notExists(pendingResourcePack), "expected stale pending data to be removed after a successful replacement");
+	}
+
+	private static void rejectsTraversalShapedZipEntries() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-unsafe-entry");
+		Path resourcePack = worldDirectory.resolve("resources.zip");
+		byte[] original = zip(Map.of(
+				"pack.mcmeta", "{\"description\":\"test\"}",
+				"assets/../lang/zh_cn.json", "{\"map.test\":\"unsafe\"}"
+		));
+		Files.write(resourcePack, original);
+
+		boolean rejected = false;
+		try {
+			WorldResourcePackLanguages.writeTargetLanguage(worldDirectory, "zh_cn", Map.of("map.test", "测试"));
+		} catch (IOException exception) {
+			rejected = exception.getMessage().contains("unsafe zip entry");
+		}
+
+		check(rejected, "expected traversal-shaped zip entries to be rejected");
+		check(java.util.Arrays.equals(original, Files.readAllBytes(resourcePack)), "expected a rejected zip to leave the original resource pack unchanged");
 	}
 
 	private static void resolvesLiteralWorldBlockTranslations() {
