@@ -65,11 +65,7 @@ public final class WorldLanguageServer {
 							context.getSource().sendSuccess(() -> Component.literal(WorldLanguageMessages.requestedManifest(sent, language(player))), false);
 							return sent ? 1 : 0;
 						}))
-<<<<<<< HEAD
-						.then(Commands.literal("push").requires(source -> source.hasPermission(Commands.LEVEL_ADMINS)).executes(context -> {
-=======
 						.then(Commands.literal("push").requires(WorldLanguageServer::canPush).executes(context -> {
->>>>>>> 8aae31a (Let the local world owner publish without cheats)
 							int playerCount = sendManifestToAll(context.getSource().getServer());
 							context.getSource().sendSuccess(() -> Component.literal(WorldLanguageMessages.publishedManifest(playerCount, language(context.getSource().getPlayer()))), false);
 							return playerCount;
