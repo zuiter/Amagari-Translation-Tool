@@ -8,7 +8,10 @@
 		"BookViewScreenMixin",
 		"ClientLanguageMixin",
 		"GuiGraphicsMixin",
-		"MinecraftMixin"
+		"LanguageManagerMixin",
+		"MinecraftMixin",
+		"SignTextMixin",
+		"TextDisplayMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
