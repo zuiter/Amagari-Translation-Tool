@@ -164,7 +164,7 @@ public final class WorldLanguageServer {
 	private static boolean canPush(CommandSourceStack source) {
 		ServerPlayer player = source.getPlayer();
 		return canPublish(
-				Commands.hasPermission(Commands.LEVEL_ADMINS).test(source),
+				source.hasPermission(Commands.LEVEL_ADMINS),
 				player != null && isSingleplayerOwner(player, source.getServer())
 		);
 	}
