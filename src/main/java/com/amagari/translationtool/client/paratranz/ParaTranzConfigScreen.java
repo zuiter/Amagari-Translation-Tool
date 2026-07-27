@@ -17,6 +17,7 @@ import java.nio.file.Path;
 public class ParaTranzConfigScreen extends Screen {
 	private static final int FIELD_HEIGHT = 20;
 	private static final int FIELD_GAP = 40;
+	private static final int CHECKBOX_GAP = 26;
 	private static final int LABEL_COLOR = 0xFFA0A0A0;
 	private static final int TEXT_COLOR = 0xFFFFFFFF;
 	private static final int ERROR_COLOR = 0xFFFF7070;
@@ -36,6 +37,7 @@ public class ParaTranzConfigScreen extends Screen {
 	private Checkbox clearToken;
 	private Checkbox triggerExport;
 	private Checkbox overwriteWorldLanguageFiles;
+	private Checkbox writeWorldResourcePackLanguageFile;
 	private String status = "";
 	private int formLeft;
 
@@ -55,7 +57,7 @@ public class ParaTranzConfigScreen extends Screen {
 	protected void init() {
 		formLeft = Math.max(24, (width - 360) / 2);
 		int fieldWidth = Math.min(360, width - 48);
-		int top = Math.max(56, (height - 236) / 2);
+		int top = Math.max(40, (height - 234) / 2);
 		ParaTranzConfig current = loadConfig();
 
 		token = new EditBox(font, formLeft, top, fieldWidth, FIELD_HEIGHT, Component.literal(WorldLanguageMessages.paraConfigTokenHint(hasToken, languageCode)));
@@ -74,8 +76,9 @@ public class ParaTranzConfigScreen extends Screen {
 		clearToken = addCheckbox(WorldLanguageMessages.paraConfigClearTokenLabel(languageCode), rightColumnX, top + FIELD_GAP * 2, false);
 		triggerExport = addCheckbox(WorldLanguageMessages.paraConfigTriggerExportLabel(languageCode), formLeft, top + FIELD_GAP * 3, current.triggerExport());
 		overwriteWorldLanguageFiles = addCheckbox(WorldLanguageMessages.paraConfigOverwriteWorldFilesLabel(languageCode), rightColumnX, top + FIELD_GAP * 3, current.overwriteWorldLanguageFiles());
+		writeWorldResourcePackLanguageFile = addCheckbox(WorldLanguageMessages.paraConfigWriteWorldResourcePackLabel(languageCode), formLeft, top + FIELD_GAP * 3 + CHECKBOX_GAP, current.writeWorldResourcePackLanguageFile());
 
-		int buttonY = top + FIELD_GAP * 4;
+		int buttonY = top + FIELD_GAP * 3 + CHECKBOX_GAP * 2;
 		int buttonX = formLeft + (fieldWidth - BUTTON_WIDTH * 2 - BUTTON_GAP) / 2;
 		addRenderableWidget(Button.builder(Component.literal(WorldLanguageMessages.paraConfigSaveLabel(languageCode)), button -> save())
 				.bounds(buttonX, buttonY, BUTTON_WIDTH, 20)
@@ -122,7 +125,8 @@ public class ParaTranzConfigScreen extends Screen {
 					targetLanguage.getValue(),
 					triggerExport.selected(),
 					parsedMaxCachedArtifacts,
-					overwriteWorldLanguageFiles.selected()
+					overwriteWorldLanguageFiles.selected(),
+					writeWorldResourcePackLanguageFile.selected()
 			);
 			ParaTranzConfig.save(gameDirectory, nextConfig);
 			ParaTranzContext.updateActiveConfig(ParaTranzConfig.load(gameDirectory));
