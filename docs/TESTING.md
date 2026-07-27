@@ -79,12 +79,14 @@ Use this checklist when manually testing ParaTranz downloads:
 - Enable `Overwrite current world language files`, pull a project in a local singleplayer world, and confirm `saves/<world>/amagari_translation_tool/lang/<target_language>.json` is rewritten while older split files for the same language are removed.
 - Enable `Write into current world resource pack` for a world whose `resources.zip` already contains `assets/<namespace>/lang/<target_language>.json`; pull a project and confirm matching keys are replaced, unrelated keys and non-language ZIP entries are preserved, and `resources.zip.att-backup` is created.
 - On Windows, repeat while the world resource pack is actively loaded; if direct replacement is blocked, confirm `resources.zip.att-pending` is created, then leave the world and confirm it replaces `resources.zip`. Restart the client with an `.att-pending` file present and confirm startup recovery also completes the replacement.
+- Modify `resources.zip` after an older `.att-pending` file was created, then pull again and confirm the newer current resource-pack entries are preserved instead of being overwritten by stale pending data.
 - Repeat with a resource pack that has `assets/<namespace>/lang/` but no target-language file and confirm `<target_language>.json` is added directly to that directory.
 - Repeat with a resource pack that has an asset namespace but no `lang` directory and confirm `assets/<namespace>/lang/<target_language>.json` is created automatically.
 - Repeat without `resources.zip` or a `<world>/resources` folder and confirm the chat reports that resource-pack writing was skipped while the pulled translations still apply to the current session.
 - Join a remote server with overwrite enabled, pull a project, and confirm the chat reports that no writable local world directory is active while the session-only ParaTranz translations still apply.
 - In a test map with fixed literal signs covered by `*.world.block.*` entries, confirm those signs render with their pulled target-language translations after apply.
 - Confirm `.minecraft/config/amagari_lang/config.json` exists and contains `paratranzApiToken`; if `.minecraft/config/amagari_translation_tool.json` exists first, confirm it migrates into the nested config path.
+- Migrate a legacy config containing only `paratranzApiToken` and confirm `triggerExport` remains enabled by default.
 - Confirm `.minecraft/amagari_translation_tool/paratranz_cache/19173/` contains a downloaded artifact zip and metadata after a successful pull.
 - Set `maxCachedArtifacts=1`, pull the same project twice when two artifact zips are available, and confirm only the newest `artifact-*.zip` remains for that project.
 - Run `/amagari_lang status` and confirm it reports the world/remote language state plus ParaTranz project name/id, artifact id/time, loaded files, entries, active languages, and any failed files.
