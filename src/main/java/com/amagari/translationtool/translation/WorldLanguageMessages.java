@@ -115,6 +115,10 @@ public final class WorldLanguageMessages {
 		return isChinese(languageCode) ? "覆盖当前地图语言文件" : "Overwrite current world language files";
 	}
 
+	public static String paraConfigWriteWorldResourcePackLabel(String languageCode) {
+		return isChinese(languageCode) ? "写入当前地图资源包" : "Write into current world resource pack";
+	}
+
 	public static String paraConfigSaveLabel(String languageCode) {
 		return isChinese(languageCode) ? "保存" : "Save";
 	}
@@ -250,6 +254,47 @@ public final class WorldLanguageMessages {
 			return "ParaTranz：覆盖当前地图语言文件失败：" + error;
 		}
 		return "ParaTranz: failed to overwrite current world language files: " + error;
+	}
+
+	public static String paraTranzResourcePackWriteSucceeded(Path resourcePack, List<String> languageFiles, String languageCode) {
+		String files = String.join(", ", languageFiles);
+		if (isChinese(languageCode)) {
+			return "ParaTranz：已将目标语言写入地图资源包 " + resourcePack + "（" + files + "）；如有被替换的资源包或语言文件，已保留 .att-backup 备份。";
+		}
+		return "ParaTranz: wrote the target language into world resource pack " + resourcePack
+				+ " (" + files + "); any replaced resource pack or language file was saved as an .att-backup.";
+	}
+
+	public static String paraTranzResourcePackWritePending(Path resourcePack, List<String> languageFiles, String languageCode) {
+		String files = String.join(", ", languageFiles);
+		if (isChinese(languageCode)) {
+			return "ParaTranz：地图资源包当前正在使用，已暂存更新 " + resourcePack + "（" + files
+					+ "）；退出地图后会自动完成替换，若本次未完成则会在下次启动游戏时重试。";
+		}
+		return "ParaTranz: the world resource pack is currently in use, so the update was staged for "
+				+ resourcePack + " (" + files
+				+ "); replacement will finish after leaving the world, or retry on the next client start.";
+	}
+
+	public static String paraTranzResourcePackSkippedNoWorld(String languageCode) {
+		if (isChinese(languageCode)) {
+			return "ParaTranz：当前没有可写入的本地地图，已跳过资源包写入。";
+		}
+		return "ParaTranz: no writable local world is active; skipped resource-pack writing.";
+	}
+
+	public static String paraTranzResourcePackSkippedMissing(String languageCode) {
+		if (isChinese(languageCode)) {
+			return "ParaTranz：当前地图中没有 resources.zip 或 resources 文件夹，已跳过资源包写入。";
+		}
+		return "ParaTranz: the current world has no resources.zip or resources directory; skipped resource-pack writing.";
+	}
+
+	public static String paraTranzResourcePackWriteFailed(String error, String languageCode) {
+		if (isChinese(languageCode)) {
+			return "ParaTranz：写入当前地图资源包失败：" + error;
+		}
+		return "ParaTranz: failed to write into the current world resource pack: " + error;
 	}
 
 	public static String paraTranzStatus(ParaTranzReport report, String languageCode) {
