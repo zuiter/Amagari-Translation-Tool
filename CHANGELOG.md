@@ -17,8 +17,15 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ## [未发布]
 
+## [0.0.4] - 2026-07-27
+
+### 变更
+
+- ParaTranz 设置新增“写入当前地图资源包”：可将目标语言合并到地图 `resources.zip` 或开发用 `resources` 文件夹资源包；已有 `lang` 目录但缺少目标语言时直接新增文件，没有 `lang` 时自动创建，并为被替换内容保留 `.att-backup` 备份。活动 ZIP 被 Windows 占用时会暂存更新，并在退出地图或下次启动时自动完成替换。
+
 ### 修复
 
+- 修复已有文本展示实体和可翻译告示牌不会随语言表重载立即更新的问题；ParaTranz 拉取、`/amagari_lang reload`、双语切换或原版资源重载完成后，这些文本会在下一帧重新解析译文，无需退出并重进地图。
 - 修复 `/amagari_lang pull` 与 `/amagari_lang push` 被客户端命令再次转发给自身、最终触发 `StackOverflowError` 并导致游戏崩溃的问题；两个服务端命令现在会安全回退到服务器命令树执行。
 - 修复地图书本文字自带 hover/click 交互时与 ATT 源文校对框重叠或误触的问题；地图提示与点击继续由正文触发，ATT 源文框只由追加的 `ⓘ` 标记触发。
 - 修复 1.20.6 客户端加载语言表时 `ClientLanguageMixin` 仍指向 Java `Map.copyOf` 的问题，避免初始化游戏阶段崩溃。
