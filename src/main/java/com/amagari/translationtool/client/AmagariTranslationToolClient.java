@@ -20,6 +20,8 @@ import java.util.Map;
 public class AmagariTranslationToolClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
+		Minecraft minecraft = Minecraft.getInstance();
+		ParaTranzContext.finishPendingResourcePackWrites(minecraft.gameDirectory.toPath());
 		BilingualLanguageController.register();
 		ParaTranzClientCommands.register();
 		ClientPlayNetworking.registerGlobalReceiver(WorldLanguageManifestPayload.TYPE, (client, handler, buffer, responseSender) -> {
@@ -53,6 +55,7 @@ public class AmagariTranslationToolClient implements ClientModInitializer {
 			client.execute(() -> handleParaTranzCommand(payload, client));
 		});
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+			ParaTranzContext.finishPendingResourcePackWrite(WorldLanguageContext.getWorldDirectory());
 			WorldLanguageContext.leaveWorld();
 			BilingualLanguageController.resetSessionState(client);
 			ParaTranzContext.resetSessionState();

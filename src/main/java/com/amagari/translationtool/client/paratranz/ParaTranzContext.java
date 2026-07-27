@@ -7,11 +7,13 @@ import com.amagari.translationtool.client.WorldLanguageClient;
 import com.amagari.translationtool.client.WorldLanguageContext;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
 import com.amagari.translationtool.translation.WorldLanguageMessages;
+import com.amagari.translationtool.translation.WorldResourcePackLanguages;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ParaTranzContext {
@@ -27,6 +30,12 @@ public final class ParaTranzContext {
 		thread.setDaemon(true);
 		return thread;
 	});
+	private static final ExecutorService FILE_EXECUTOR = Executors.newSingleThreadExecutor(task -> {
+		Thread thread = new Thread(task, "Amagari ParaTranz Files");
+		thread.setDaemon(true);
+		return thread;
+	});
+	private static final AtomicLong SESSION_GENERATION = new AtomicLong();
 	private static final AtomicReference<ParaTranzReport> LAST_REPORT = new AtomicReference<>(ParaTranzReport.idle());
 	private static final AtomicReference<ParaTranzZipTranslations.ParseResult> ACTIVE_TRANSLATIONS = new AtomicReference<>();
 	private static final AtomicReference<ParaTranzConfig> ACTIVE_CONFIG = new AtomicReference<>(ParaTranzConfig.defaultConfig());
@@ -57,18 +66,24 @@ public final class ParaTranzContext {
 
 	public static void applyProject(Minecraft client, String projectName) {
 		Path gameDirectory = client.gameDirectory.toPath();
+		long sessionGeneration = SESSION_GENERATION.get();
+		Optional<Path> worldDirectory = WorldLanguageContext.getWorldDirectory();
 		CompletableFuture
 				.supplyAsync(() -> findProject(gameDirectory, projectName), EXECUTOR)
 				.whenComplete((match, throwable) -> client.execute(() -> {
+					if (sessionGeneration != SESSION_GENERATION.get()) {
+						return;
+					}
 					if (throwable != null) {
 						reportFailure(client, throwable);
 						return;
 					}
-					handleMatch(client, gameDirectory, projectName, match);
+					handleMatch(client, gameDirectory, projectName, match, worldDirectory, sessionGeneration);
 				}));
 	}
 
 	public static void resetSessionState() {
+		SESSION_GENERATION.incrementAndGet();
 		ACTIVE_TRANSLATIONS.set(null);
 		ACTIVE_CONFIG.set(ParaTranzConfig.defaultConfig());
 		ACTIVE_LITERAL_TRANSLATIONS.set(Map.of());
@@ -77,6 +92,24 @@ public final class ParaTranzContext {
 		WORLD_LITERAL_TRANSLATIONS.set(Map.of());
 		WORLD_SOURCE_LITERAL_TRANSLATIONS.set(Map.of());
 		LAST_REPORT.set(ParaTranzReport.idle());
+	}
+
+	public static void finishPendingResourcePackWrites(Path gameDirectory) {
+		try {
+			int completedWrites = WorldResourcePackLanguages.finishPendingWrites(gameDirectory.resolve("saves"));
+			if (completedWrites > 0) {
+				AmagariTranslationTool.LOGGER.info("Finished {} pending world resource-pack write(s)", completedWrites);
+			}
+		} catch (IOException exception) {
+			AmagariTranslationTool.LOGGER.warn("Could not finish pending world resource-pack writes", exception);
+		}
+	}
+
+	public static void finishPendingResourcePackWrite(Optional<Path> worldDirectory) {
+		if (worldDirectory.isEmpty()) {
+			return;
+		}
+		CompletableFuture.runAsync(() -> finishPendingResourcePackWriteWithRetry(worldDirectory.get()), FILE_EXECUTOR);
 	}
 
 	public static ParaTranzConfig refreshConfig(Path gameDirectory) {
@@ -212,7 +245,14 @@ public final class ParaTranzContext {
 				.exceptionally(throwable -> List.of());
 	}
 
-	private static void handleMatch(Minecraft client, Path gameDirectory, String projectName, ParaTranzProjectMatcher.MatchResult match) {
+	private static void handleMatch(
+			Minecraft client,
+			Path gameDirectory,
+			String projectName,
+			ParaTranzProjectMatcher.MatchResult match,
+			Optional<Path> worldDirectory,
+			long sessionGeneration
+	) {
 		String languageCode = selectedLanguage(client);
 		if (match.status() == ParaTranzProjectMatcher.MatchStatus.NOT_FOUND) {
 			send(client, WorldLanguageMessages.paraTranzProjectNotFound(projectName, languageCode));
@@ -229,11 +269,14 @@ public final class ParaTranzContext {
 		CompletableFuture
 				.supplyAsync(() -> downloadAndCache(gameDirectory, project), EXECUTOR)
 				.whenComplete((cachedTranslations, throwable) -> client.execute(() -> {
+					if (sessionGeneration != SESSION_GENERATION.get()) {
+						return;
+					}
 					if (throwable != null) {
 						reportFailure(client, throwable);
 						return;
 					}
-					applyCachedTranslations(client, cachedTranslations);
+					applyCachedTranslations(client, cachedTranslations, worldDirectory, sessionGeneration);
 				}));
 	}
 
@@ -269,16 +312,17 @@ public final class ParaTranzContext {
 		}
 	}
 
-	private static void applyCachedTranslations(Minecraft client, ParaTranzCache.CachedTranslations cachedTranslations) {
+	private static void applyCachedTranslations(
+			Minecraft client,
+			ParaTranzCache.CachedTranslations cachedTranslations,
+			Optional<Path> worldDirectory,
+			long sessionGeneration
+	) {
 		ACTIVE_TRANSLATIONS.set(cachedTranslations.translations());
 		String languageCode = selectedLanguage(client);
 		ParaTranzConfig config = cachedTranslations.config();
 		ACTIVE_CONFIG.set(config);
 		refreshLiteralTranslations(cachedTranslations.translations());
-		String overwriteMessage = "";
-		if (config.overwriteWorldLanguageFiles()) {
-			overwriteMessage = overwriteWorldLanguageFiles(cachedTranslations.translations(), config.targetLanguage(), languageCode);
-		}
 		LAST_REPORT.set(ParaTranzReport.applied(
 				cachedTranslations.project(),
 				cachedTranslations.artifact(),
@@ -287,12 +331,52 @@ public final class ParaTranzContext {
 				cachedTranslations.translations().loadedEntries(),
 				cachedTranslations.translations().translationsByLanguage().keySet().stream().sorted().toList()
 		));
-		String finalOverwriteMessage = overwriteMessage;
+
+		if (!config.overwriteWorldLanguageFiles() && !config.writeWorldResourcePackLanguageFile()) {
+			finishApply(client, List.of());
+			return;
+		}
+
+		CompletableFuture
+				.supplyAsync(
+						() -> sessionGeneration == SESSION_GENERATION.get()
+								? writePulledTranslations(cachedTranslations.translations(), config, languageCode, worldDirectory)
+								: List.<String>of(),
+						FILE_EXECUTOR
+				)
+				.whenComplete((writeMessages, throwable) -> client.execute(() -> {
+					if (sessionGeneration != SESSION_GENERATION.get()) {
+						return;
+					}
+					if (throwable != null) {
+						AmagariTranslationTool.LOGGER.warn("Could not persist pulled ParaTranz translations", unwrap(throwable));
+						finishApply(client, List.of(WorldLanguageMessages.paraTranzResourcePackWriteFailed(cleanMessage(throwable), languageCode)));
+						return;
+					}
+					finishApply(client, writeMessages);
+				}));
+	}
+
+	private static List<String> writePulledTranslations(
+			ParaTranzZipTranslations.ParseResult translations,
+			ParaTranzConfig config,
+			String feedbackLanguage,
+			Optional<Path> worldDirectory
+	) {
+		List<String> writeMessages = new ArrayList<>();
+		if (config.overwriteWorldLanguageFiles()) {
+			writeMessages.add(overwriteWorldLanguageFiles(translations, config.targetLanguage(), feedbackLanguage, worldDirectory));
+		}
+		if (config.writeWorldResourcePackLanguageFile()) {
+			writeMessages.add(writeWorldResourcePackLanguageFile(translations, config.targetLanguage(), feedbackLanguage, worldDirectory));
+		}
+		return writeMessages.stream().filter(message -> !message.isBlank()).toList();
+	}
+
+	private static void finishApply(Minecraft client, List<String> writeMessages) {
 		WorldLanguageClient.reloadLanguage(client, () -> {
 			send(client, LAST_REPORT.get().describe(selectedLanguage(client)));
-			if (!finalOverwriteMessage.isBlank()) {
-				send(client, finalOverwriteMessage);
-			}
+			writeMessages.forEach(message -> send(client, message));
 		});
 	}
 
@@ -344,8 +428,12 @@ public final class ParaTranzContext {
 				));
 	}
 
-	private static String overwriteWorldLanguageFiles(ParaTranzZipTranslations.ParseResult translations, String targetLanguage, String feedbackLanguage) {
-		Optional<Path> worldDirectory = WorldLanguageContext.getWorldDirectory();
+	private static String overwriteWorldLanguageFiles(
+			ParaTranzZipTranslations.ParseResult translations,
+			String targetLanguage,
+			String feedbackLanguage,
+			Optional<Path> worldDirectory
+	) {
 		if (worldDirectory.isEmpty()) {
 			return WorldLanguageMessages.paraTranzOverwriteSkippedNoWorld(feedbackLanguage);
 		}
@@ -360,6 +448,76 @@ public final class ParaTranzContext {
 			return WorldLanguageMessages.paraTranzOverwriteSucceeded(worldDirectory.get().resolve(WorldLanguageFiles.LANG_DIRECTORY), targetLanguage, feedbackLanguage);
 		} catch (IOException exception) {
 			return WorldLanguageMessages.paraTranzOverwriteFailed(exception.getMessage(), feedbackLanguage);
+		}
+	}
+
+	private static String writeWorldResourcePackLanguageFile(
+			ParaTranzZipTranslations.ParseResult translations,
+			String targetLanguage,
+			String feedbackLanguage,
+			Optional<Path> worldDirectory
+	) {
+		if (worldDirectory.isEmpty()) {
+			return WorldLanguageMessages.paraTranzResourcePackSkippedNoWorld(feedbackLanguage);
+		}
+
+		Map<String, String> targetTranslations = translations.translationsByLanguage().get(targetLanguage);
+		if (targetTranslations == null || targetTranslations.isEmpty()) {
+			return WorldLanguageMessages.paraTranzOverwriteSkippedNoTarget(targetLanguage, feedbackLanguage);
+		}
+
+		try {
+			Optional<WorldResourcePackLanguages.WriteResult> result = WorldResourcePackLanguages.writeTargetLanguage(
+					worldDirectory.get(),
+					targetLanguage,
+					targetTranslations
+			);
+			if (result.isEmpty()) {
+				return WorldLanguageMessages.paraTranzResourcePackSkippedMissing(feedbackLanguage);
+			}
+			if (result.get().pendingReplacement()) {
+				return WorldLanguageMessages.paraTranzResourcePackWritePending(
+						result.get().resourcePack(),
+						result.get().languageFiles(),
+						feedbackLanguage
+				);
+			}
+			return WorldLanguageMessages.paraTranzResourcePackWriteSucceeded(
+					result.get().resourcePack(),
+					result.get().languageFiles(),
+					feedbackLanguage
+			);
+		} catch (IOException exception) {
+			return WorldLanguageMessages.paraTranzResourcePackWriteFailed(exception.getMessage(), feedbackLanguage);
+		}
+	}
+
+	private static void finishPendingResourcePackWriteWithRetry(Path worldDirectory) {
+		IOException lastFailure = null;
+		for (int attempt = 0; attempt < 50; attempt++) {
+			try {
+				if (WorldResourcePackLanguages.finishPendingWrite(worldDirectory)) {
+					AmagariTranslationTool.LOGGER.info("Finished pending world resource-pack write for {}", worldDirectory);
+				}
+				return;
+			} catch (IOException exception) {
+				lastFailure = exception;
+			}
+
+			try {
+				Thread.sleep(100L);
+			} catch (InterruptedException exception) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+		}
+
+		if (lastFailure != null) {
+			AmagariTranslationTool.LOGGER.warn(
+					"Could not finish pending world resource-pack write for {}; it will be retried on the next client start",
+					worldDirectory,
+					lastFailure
+			);
 		}
 	}
 
