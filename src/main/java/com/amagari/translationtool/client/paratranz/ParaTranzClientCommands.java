@@ -3,6 +3,7 @@ package com.amagari.translationtool.client.paratranz;
 import com.amagari.translationtool.client.WorldLanguageClient;
 import com.amagari.translationtool.client.WorldLanguageContext;
 import com.amagari.translationtool.translation.WorldLanguageMessages;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -25,8 +26,11 @@ public final class ParaTranzClientCommands {
 
 	public static void register() {
 		ClientTickEvents.END_CLIENT_TICK.register(ParaTranzClientCommands::openPendingConfigScreen);
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(
-				ClientCommandManager.literal("amagari_lang")
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> dispatcher.register(commandTree()));
+	}
+
+	static LiteralArgumentBuilder<FabricClientCommandSource> commandTree() {
+		return ClientCommandManager.literal("amagari_lang")
 						.then(ClientCommandManager.literal("paratranz")
 								.executes(context -> showHelp(context.getSource().getClient()))
 								.then(ClientCommandManager.literal("projects")
@@ -65,11 +69,10 @@ public final class ParaTranzClientCommands {
 									});
 									return 1;
 								}))
-						.then(ClientCommandManager.literal("pull")
-								.executes(context -> forwardToServer(context.getSource().getClient(), "amagari_lang pull")))
-						.then(ClientCommandManager.literal("push")
-								.executes(context -> forwardToServer(context.getSource().getClient(), "amagari_lang push")))
-		));
+						// Keep server-owned commands in client completion without executing them locally.
+						// A non-executable full match yields Fabric's server-fallback exception.
+						.then(ClientCommandManager.literal("pull"))
+						.then(ClientCommandManager.literal("push"));
 	}
 
 	public static int listProjects(Minecraft client) {
@@ -95,14 +98,6 @@ public final class ParaTranzClientCommands {
 
 	public static int pullProject(Minecraft client, String projectName) {
 		ParaTranzContext.applyProject(client, projectName);
-		return 1;
-	}
-
-	private static int forwardToServer(Minecraft client, String command) {
-		if (client.getConnection() == null) {
-			return 0;
-		}
-		client.getConnection().sendCommand(command);
 		return 1;
 	}
 

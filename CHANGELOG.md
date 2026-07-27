@@ -19,6 +19,7 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ### 修复
 
+- 修复 `/amagari_lang pull` 与 `/amagari_lang push` 被客户端命令再次转发给自身、最终触发 `StackOverflowError` 并导致游戏崩溃的问题；两个服务端命令现在会安全回退到服务器命令树执行。
 - 修复地图书本文字自带 hover/click 交互时与 ATT 源文校对框重叠或误触的问题；地图提示与点击继续由正文触发，ATT 源文框只由追加的 `ⓘ` 标记触发。
 - 修复 1.21.1 客户端加载语言表时 `ClientLanguageMixin` 仍指向 Java `Map.copyOf` 的问题，避免初始化游戏阶段崩溃。
 - 修复 1.21.1 客户端加载时容器 tooltip mixin shadow 了不存在的方法导致 Mixin 应用失败的问题。
