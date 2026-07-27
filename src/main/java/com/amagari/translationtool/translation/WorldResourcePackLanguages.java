@@ -55,7 +55,7 @@ public final class WorldResourcePackLanguages {
 		Path zipResourcePack = worldDirectory.resolve(WORLD_RESOURCE_PACK_ZIP);
 		if (Files.isRegularFile(zipResourcePack)) {
 			Path pendingResourcePack = pendingPath(zipResourcePack);
-			Path mergeSource = Files.isRegularFile(pendingResourcePack) ? pendingResourcePack : zipResourcePack;
+			Path mergeSource = preferredMergeSource(zipResourcePack, pendingResourcePack);
 			return Optional.of(writeZipResourcePack(zipResourcePack, mergeSource, normalizedLanguageCode, translations));
 		}
 
@@ -153,18 +153,21 @@ public final class WorldResourcePackLanguages {
 			}
 
 			Files.copy(resourcePack, backupPath(resourcePack), StandardCopyOption.REPLACE_EXISTING);
-			Files.deleteIfExists(pendingPath(resourcePack));
+			Path pendingResourcePack = pendingPath(resourcePack);
 			boolean pendingReplacement = false;
 			try {
 				moveReplacing(temporaryZip, resourcePack);
 			} catch (IOException replacementException) {
 				try {
-					moveReplacing(temporaryZip, pendingPath(resourcePack));
+					replacePendingPreservingExisting(temporaryZip, pendingResourcePack);
 					pendingReplacement = true;
 				} catch (IOException pendingException) {
 					replacementException.addSuppressed(pendingException);
 					throw replacementException;
 				}
+			}
+			if (!pendingReplacement) {
+				Files.deleteIfExists(pendingResourcePack);
 			}
 			return new WriteResult(resourcePack, targetFiles, true, pendingReplacement);
 		} finally {
@@ -176,6 +179,11 @@ public final class WorldResourcePackLanguages {
 		Path resourcePack = worldDirectory.resolve(WORLD_RESOURCE_PACK_ZIP);
 		Path pendingResourcePack = pendingPath(resourcePack);
 		if (!Files.isRegularFile(pendingResourcePack)) {
+			return false;
+		}
+		if (Files.isRegularFile(resourcePack)
+				&& Files.getLastModifiedTime(resourcePack).compareTo(Files.getLastModifiedTime(pendingResourcePack)) > 0) {
+			Files.deleteIfExists(pendingResourcePack);
 			return false;
 		}
 		if (Files.isRegularFile(resourcePack)) {
@@ -343,10 +351,54 @@ public final class WorldResourcePackLanguages {
 				.orElse(false);
 	}
 
-	private static String normalizedZipPath(String zipPath) {
+	private static Path preferredMergeSource(Path resourcePack, Path pendingResourcePack) throws IOException {
+		if (!Files.isRegularFile(pendingResourcePack)) {
+			return resourcePack;
+		}
+		return Files.getLastModifiedTime(pendingResourcePack).compareTo(Files.getLastModifiedTime(resourcePack)) >= 0
+				? pendingResourcePack
+				: resourcePack;
+	}
+
+	private static void replacePendingPreservingExisting(Path source, Path pendingResourcePack) throws IOException {
+		Path recoveryFile = null;
+		if (Files.isRegularFile(pendingResourcePack)) {
+			recoveryFile = Files.createTempFile(
+					pendingResourcePack.getParent(),
+					pendingResourcePack.getFileName().toString() + "-recovery-",
+					".tmp"
+			);
+			Files.copy(pendingResourcePack, recoveryFile, StandardCopyOption.REPLACE_EXISTING);
+		}
+
+		try {
+			moveReplacing(source, pendingResourcePack);
+		} catch (IOException replacementException) {
+			if (recoveryFile != null && Files.notExists(pendingResourcePack)) {
+				try {
+					moveReplacing(recoveryFile, pendingResourcePack);
+					recoveryFile = null;
+				} catch (IOException recoveryException) {
+					replacementException.addSuppressed(recoveryException);
+				}
+			}
+			throw replacementException;
+		} finally {
+			if (recoveryFile != null) {
+				Files.deleteIfExists(recoveryFile);
+			}
+		}
+	}
+
+	private static String normalizedZipPath(String zipPath) throws IOException {
 		String normalizedPath = zipPath.replace('\\', '/');
 		while (normalizedPath.startsWith("/")) {
 			normalizedPath = normalizedPath.substring(1);
+		}
+		for (String segment : normalizedPath.split("/")) {
+			if (segment.equals(".") || segment.equals("..")) {
+				throw new IOException("unsafe zip entry: " + zipPath);
+			}
 		}
 		return normalizedPath;
 	}
