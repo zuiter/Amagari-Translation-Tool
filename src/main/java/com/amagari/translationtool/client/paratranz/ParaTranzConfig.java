@@ -15,7 +15,8 @@ public record ParaTranzConfig(
 		String targetLanguage,
 		boolean triggerExport,
 		int maxCachedArtifacts,
-		boolean overwriteWorldLanguageFiles
+		boolean overwriteWorldLanguageFiles,
+		boolean writeWorldResourcePackLanguageFile
 ) {
 	public static final String DEFAULT_API_TOKEN = "";
 	public static final String DEFAULT_SOURCE_LANGUAGE = "en_us";
@@ -23,6 +24,7 @@ public record ParaTranzConfig(
 	public static final boolean DEFAULT_TRIGGER_EXPORT = true;
 	public static final int DEFAULT_MAX_CACHED_ARTIFACTS = 1;
 	public static final boolean DEFAULT_OVERWRITE_WORLD_LANGUAGE_FILES = false;
+	public static final boolean DEFAULT_WRITE_WORLD_RESOURCE_PACK_LANGUAGE_FILE = false;
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final Path CONFIG_DIRECTORY = Path.of("config", "amagari_lang");
 	private static final String CONFIG_FILE = "config.json";
@@ -35,7 +37,8 @@ public record ParaTranzConfig(
 				DEFAULT_TARGET_LANGUAGE,
 				DEFAULT_TRIGGER_EXPORT,
 				DEFAULT_MAX_CACHED_ARTIFACTS,
-				DEFAULT_OVERWRITE_WORLD_LANGUAGE_FILES
+				DEFAULT_OVERWRITE_WORLD_LANGUAGE_FILES,
+				DEFAULT_WRITE_WORLD_RESOURCE_PACK_LANGUAGE_FILE
 		);
 	}
 
@@ -77,7 +80,8 @@ public record ParaTranzConfig(
 					normalizedLanguage(config.targetLanguage(), DEFAULT_TARGET_LANGUAGE),
 					config.triggerExport(),
 					config.maxCachedArtifacts() <= 0 ? DEFAULT_MAX_CACHED_ARTIFACTS : config.maxCachedArtifacts(),
-					config.overwriteWorldLanguageFiles()
+					config.overwriteWorldLanguageFiles(),
+					config.writeWorldResourcePackLanguageFile()
 			);
 		} catch (JsonSyntaxException exception) {
 			throw new IOException("config file is not valid JSON", exception);

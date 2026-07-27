@@ -31,6 +31,7 @@ public class MinecraftMixin {
 
 	@Inject(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V", at = @At("HEAD"))
 	private void amagari_translation_tool$clearWorldLanguageDirectory(Screen screen, boolean transferring, CallbackInfo callbackInfo) {
+		ParaTranzContext.finishPendingResourcePackWrite(WorldLanguageContext.getWorldDirectory());
 		WorldLanguageContext.leaveWorld();
 		BilingualLanguageController.resetSessionState((Minecraft) (Object) this);
 		ParaTranzContext.resetSessionState();

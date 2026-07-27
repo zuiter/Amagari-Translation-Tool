@@ -18,6 +18,7 @@ import com.amagari.translationtool.client.paratranz.ParaTranzSignText;
 import com.amagari.translationtool.client.paratranz.ParaTranzZipTranslations;
 import com.amagari.translationtool.translation.WorldLanguageFiles;
 import com.amagari.translationtool.translation.WorldLanguageMessages;
+import com.amagari.translationtool.translation.WorldResourcePackLanguages;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.ClickEvent;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public final class AmagariUnitChecks {
@@ -56,10 +58,18 @@ public final class AmagariUnitChecks {
 		defaultConfigStartsBlank();
 		createsNestedParaTranzConfig();
 		migratesLegacyParaTranzConfig();
+		persistsResourcePackWriteConfig();
 		infersLanguageCodesFromParaTranzZipPaths();
 		parsesValidJsonFilesAndSkipsMalformedFiles();
 		mapsConfiguredParaTranzSourceLanguageToTargetLanguage();
 		overwritesWorldLanguageFileForTargetLanguage();
+		importsTargetLanguageIntoExistingResourcePackLangDirectory();
+		mergesTargetLanguageIntoDirectoryResourcePack();
+		createsResourcePackLangDirectoryWhenMissing();
+		importsTargetLanguageIntoZipLangDirectory();
+		mergesTargetLanguageIntoZipResourcePack();
+		mergesSubsequentWriteFromPendingZipResourcePack();
+		finishesPendingZipResourcePackWrite();
 		resolvesLiteralWorldBlockTranslations();
 		resolvesSourceLiteralWorldBlockTranslations();
 		resolvesWorldFileLiteralSignTranslations();
@@ -185,6 +195,7 @@ public final class AmagariUnitChecks {
 	private static void defaultConfigStartsBlank() {
 		check(ParaTranzConfig.defaultConfig().paratranzApiToken().isBlank(), "expected editable blank ParaTranz token placeholder");
 		check(!ParaTranzConfig.defaultConfig().overwriteWorldLanguageFiles(), "expected world language overwrite to be disabled by default");
+		check(!ParaTranzConfig.defaultConfig().writeWorldResourcePackLanguageFile(), "expected resource-pack language writing to be disabled by default");
 	}
 
 	private static void createsNestedParaTranzConfig() throws Exception {
@@ -197,6 +208,7 @@ public final class AmagariUnitChecks {
 		check(Files.exists(configPath), "expected config/amagari_lang/config.json to be created");
 		check(Files.readString(configPath, StandardCharsets.UTF_8).contains("\"paratranzApiToken\""), "expected generated config to contain paratranzApiToken");
 		check(Files.readString(configPath, StandardCharsets.UTF_8).contains("\"overwriteWorldLanguageFiles\""), "expected generated config to contain overwriteWorldLanguageFiles");
+		check(Files.readString(configPath, StandardCharsets.UTF_8).contains("\"writeWorldResourcePackLanguageFile\""), "expected generated config to contain writeWorldResourcePackLanguageFile");
 	}
 
 	private static void migratesLegacyParaTranzConfig() throws Exception {
@@ -210,8 +222,26 @@ public final class AmagariUnitChecks {
 		Path configPath = gameDirectory.resolve("config").resolve("amagari_lang").resolve("config.json");
 		check("legacy-token".equals(config.paratranzApiToken()), "expected legacy token to be loaded");
 		check(!config.overwriteWorldLanguageFiles(), "expected migrated config to keep world language overwrite disabled");
+		check(!config.writeWorldResourcePackLanguageFile(), "expected migrated config to keep resource-pack writing disabled");
 		check(Files.exists(configPath), "expected legacy config to be migrated to nested config path");
 		check(Files.readString(configPath, StandardCharsets.UTF_8).contains("legacy-token"), "expected migrated config to preserve legacy token");
+	}
+
+	private static void persistsResourcePackWriteConfig() throws Exception {
+		Path gameDirectory = Files.createTempDirectory("amagari-resource-pack-config");
+		ParaTranzConfig.save(gameDirectory, new ParaTranzConfig(
+				"token",
+				"en_us",
+				"zh_cn",
+				true,
+				2,
+				false,
+				true
+		));
+
+		ParaTranzConfig config = ParaTranzConfig.load(gameDirectory);
+
+		check(config.writeWorldResourcePackLanguageFile(), "expected resource-pack writing to persist in the ParaTranz config");
 	}
 
 	private static void infersLanguageCodesFromParaTranzZipPaths() {
@@ -261,6 +291,141 @@ public final class AmagariUnitChecks {
 		check(updatedTarget.contains("new target"), "expected target language file to be overwritten");
 		check(Files.notExists(languageDirectory.resolve("zh_cn.items.json")), "expected old target-language split files to be removed");
 		check(Files.exists(languageDirectory.resolve("en_us.json")), "expected other language files to be preserved");
+	}
+
+	private static void importsTargetLanguageIntoExistingResourcePackLangDirectory() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-folder");
+		Path languageDirectory = worldDirectory.resolve("resources/assets/permafrost/lang");
+		Files.createDirectories(languageDirectory);
+		Files.writeString(languageDirectory.resolve("en_us.json"), "{\"map.title\":\"Permafrost\"}", StandardCharsets.UTF_8);
+
+		WorldResourcePackLanguages.WriteResult result = WorldResourcePackLanguages.writeTargetLanguage(
+				worldDirectory,
+				"zh_cn",
+				Map.of("map.title", "永冻之地")
+		).orElseThrow();
+
+		Path targetLanguageFile = languageDirectory.resolve("zh_cn.json");
+		check(result.languageFiles().equals(List.of("assets/permafrost/lang/zh_cn.json")), "expected target language to use the existing lang directory");
+		check(Files.readString(targetLanguageFile, StandardCharsets.UTF_8).contains("永冻之地"), "expected target language file to be imported into the existing lang directory");
+		check(Files.exists(languageDirectory.resolve("en_us.json")), "expected existing source language file to be preserved");
+	}
+
+	private static void createsResourcePackLangDirectoryWhenMissing() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-no-lang");
+		Path resourcePack = worldDirectory.resolve("resources");
+		Files.createDirectories(resourcePack.resolve("assets/minecraft/textures"));
+
+		WorldResourcePackLanguages.writeTargetLanguage(
+				worldDirectory,
+				"zh_cn",
+				Map.of("menu.test", "测试")
+		).orElseThrow();
+
+		Path targetLanguageFile = resourcePack.resolve("assets/minecraft/lang/zh_cn.json");
+		check(Files.isRegularFile(targetLanguageFile), "expected a missing resource-pack lang directory to be created");
+		check(Files.readString(targetLanguageFile, StandardCharsets.UTF_8).contains("测试"), "expected translations in the newly created language file");
+	}
+
+	private static void mergesTargetLanguageIntoDirectoryResourcePack() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-folder-merge");
+		Path languageFile = worldDirectory.resolve("resources/assets/permafrost/lang/zh_cn.json");
+		Files.createDirectories(languageFile.getParent());
+		Files.writeString(languageFile, "{\"map.keep\":\"保留\",\"map.override\":\"旧译文\"}", StandardCharsets.UTF_8);
+
+		WorldResourcePackLanguages.writeTargetLanguage(
+				worldDirectory,
+				"zh_cn",
+				Map.of("map.override", "新译文", "map.added", "新增")
+		).orElseThrow();
+
+		String languageJson = Files.readString(languageFile, StandardCharsets.UTF_8);
+		check(languageJson.contains("保留"), "expected unrelated directory-pack translations to be preserved");
+		check(languageJson.contains("新译文"), "expected directory-pack matching keys to be replaced");
+		check(languageJson.contains("新增"), "expected directory-pack translations to be added");
+		check(Files.isRegularFile(languageFile.resolveSibling("zh_cn.json.att-backup")), "expected the previous directory-pack language file to be backed up");
+	}
+
+	private static void mergesTargetLanguageIntoZipResourcePack() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-zip");
+		Path resourcePack = worldDirectory.resolve("resources.zip");
+		Files.write(resourcePack, zip(Map.of(
+				"pack.mcmeta", "{\"pack\":{\"pack_format\":1,\"description\":\"test\"}}",
+				"assets/permafrost/lang/zh_cn.json", "{\"map.keep\":\"保留\",\"map.override\":\"旧译文\"}",
+				"assets/permafrost/textures/example.txt", "texture"
+		)));
+
+		WorldResourcePackLanguages.WriteResult result = WorldResourcePackLanguages.writeTargetLanguage(
+				worldDirectory,
+				"zh_cn",
+				Map.of("map.override", "新译文", "map.added", "新增")
+		).orElseThrow();
+
+		String languageJson = readZipEntry(resourcePack, "assets/permafrost/lang/zh_cn.json");
+		check(result.zip(), "expected resources.zip to use zip writing");
+		check(languageJson.contains("保留"), "expected unrelated existing resource-pack translations to be preserved");
+		check(languageJson.contains("新译文"), "expected pulled translations to override matching resource-pack keys");
+		check(languageJson.contains("新增"), "expected pulled translations to add new resource-pack keys");
+		check("texture".equals(readZipEntry(resourcePack, "assets/permafrost/textures/example.txt")), "expected unrelated zip entries to be preserved");
+		check(readZipEntry(resourcePack, "pack.mcmeta").contains("\"description\":\"test\""), "expected resource-pack metadata to be preserved");
+		check(Files.isRegularFile(worldDirectory.resolve("resources.zip.att-backup")), "expected the original resource pack to be backed up");
+	}
+
+	private static void importsTargetLanguageIntoZipLangDirectory() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-zip-lang");
+		Path resourcePack = worldDirectory.resolve("resources.zip");
+		Files.write(resourcePack, zip(Map.of(
+				"pack.mcmeta", "{\"pack\":{\"pack_format\":1,\"description\":\"test\"}}",
+				"assets/permafrost/lang/en_us.json", "{\"map.title\":\"Permafrost\"}"
+		)));
+
+		WorldResourcePackLanguages.WriteResult result = WorldResourcePackLanguages.writeTargetLanguage(
+				worldDirectory,
+				"zh_cn",
+				Map.of("map.title", "永冻之地")
+		).orElseThrow();
+
+		check(result.languageFiles().equals(List.of("assets/permafrost/lang/zh_cn.json")), "expected zip target language to use the existing lang directory");
+		check(readZipEntry(resourcePack, "assets/permafrost/lang/zh_cn.json").contains("永冻之地"), "expected target language to be added to the existing zip lang directory");
+		check(readZipEntry(resourcePack, "assets/permafrost/lang/en_us.json").contains("Permafrost"), "expected existing zip source language to be preserved");
+	}
+
+	private static void finishesPendingZipResourcePackWrite() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-pending");
+		Path resourcePack = worldDirectory.resolve("resources.zip");
+		Path pendingResourcePack = worldDirectory.resolve("resources.zip.att-pending");
+		Files.write(resourcePack, zip(Map.of("pack.mcmeta", "{\"description\":\"old\"}")));
+		Files.write(pendingResourcePack, zip(Map.of("pack.mcmeta", "{\"description\":\"new\"}")));
+
+		check(WorldResourcePackLanguages.finishPendingWrite(worldDirectory), "expected a pending resource-pack update to be completed");
+		check(readZipEntry(resourcePack, "pack.mcmeta").contains("\"description\":\"new\""), "expected the pending resource pack to replace the current pack");
+		check(Files.notExists(pendingResourcePack), "expected the pending resource pack to be removed after replacement");
+		check(Files.isRegularFile(worldDirectory.resolve("resources.zip.att-backup")), "expected pending replacement to back up the previous resource pack");
+	}
+
+	private static void mergesSubsequentWriteFromPendingZipResourcePack() throws Exception {
+		Path worldDirectory = Files.createTempDirectory("amagari-resource-pack-pending-merge");
+		Path resourcePack = worldDirectory.resolve("resources.zip");
+		Path pendingResourcePack = worldDirectory.resolve("resources.zip.att-pending");
+		Files.write(resourcePack, zip(Map.of(
+				"pack.mcmeta", "{\"description\":\"original\"}",
+				"assets/permafrost/lang/zh_cn.json", "{\"map.original\":\"原始\"}"
+		)));
+		Files.write(pendingResourcePack, zip(Map.of(
+				"pack.mcmeta", "{\"description\":\"pending\"}",
+				"assets/permafrost/lang/zh_cn.json", "{\"map.original\":\"原始\",\"map.first\":\"第一次\"}"
+		)));
+
+		WorldResourcePackLanguages.writeTargetLanguage(
+				worldDirectory,
+				"zh_cn",
+				Map.of("map.second", "第二次")
+		).orElseThrow();
+
+		String languageJson = readZipEntry(resourcePack, "assets/permafrost/lang/zh_cn.json");
+		check(languageJson.contains("第一次"), "expected a later write to preserve translations from the pending resource pack");
+		check(languageJson.contains("第二次"), "expected a later write to add its own translations");
+		check(Files.notExists(pendingResourcePack), "expected a successful direct replacement to remove stale pending data");
 	}
 
 	private static void resolvesLiteralWorldBlockTranslations() {
@@ -338,7 +503,7 @@ public final class AmagariUnitChecks {
 		try {
 			literalTranslations.set(Map.of());
 			sourceLiteralTranslations.set(Map.of());
-			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false));
+			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false, false));
 			ParaTranzContext.refreshWorldLiteralTranslations(Map.of(
 					"zh_cn",
 					Map.of("permafrost.i18n.world.block.credits", "鸣谢")
@@ -384,7 +549,7 @@ public final class AmagariUnitChecks {
 		Map<String, String> previousTranslations = literalTranslations.get();
 		Map<String, String> previousSourceTranslations = sourceLiteralTranslations.get();
 		try {
-			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false));
+			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false, false));
 			WorldLanguageContext.enterWorld(worldDirectory);
 
 			Map<String, String> mergedTranslations = new java.util.HashMap<>();
@@ -457,7 +622,7 @@ public final class AmagariUnitChecks {
 		AtomicReference<ParaTranzZipTranslations.ParseResult> activeTranslations = privateActiveTranslationsReference();
 		ParaTranzZipTranslations.ParseResult previousTranslations = activeTranslations.get();
 		try {
-			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false));
+			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false, false));
 			activeTranslations.set(new ParaTranzZipTranslations.ParseResult(
 					Map.of("en_us", Map.of("tooltip.test.damage", "Damage %s")),
 					1,
@@ -505,7 +670,7 @@ public final class AmagariUnitChecks {
 		ParaTranzConfig previousConfig = activeConfig.get();
 		boolean previousSourceDisplayActive = sourceDisplayActive.get();
 		try {
-			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false));
+			ParaTranzContext.updateActiveConfig(new ParaTranzConfig("", "en_us", "zh_cn", true, 1, false, false));
 			activeTranslations.set(new ParaTranzZipTranslations.ParseResult(
 					Map.of("en_us", Map.of("book.test.receiver", "Receiver")),
 					1,
@@ -588,6 +753,16 @@ public final class AmagariUnitChecks {
 			}
 		}
 		return bytes.toByteArray();
+	}
+
+	private static String readZipEntry(Path zipPath, String entryName) throws Exception {
+		try (ZipFile zip = new ZipFile(zipPath.toFile())) {
+			ZipEntry entry = zip.getEntry(entryName);
+			check(entry != null, "expected zip entry " + entryName);
+			try (var input = zip.getInputStream(entry)) {
+				return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+			}
+		}
 	}
 
 	private static void check(boolean condition, String message) {
