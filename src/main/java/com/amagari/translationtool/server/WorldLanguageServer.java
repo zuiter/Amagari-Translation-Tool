@@ -13,6 +13,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -61,7 +62,7 @@ public final class WorldLanguageServer {
 							context.getSource().sendSuccess(() -> Component.literal(WorldLanguageMessages.requestedManifest(sent, language(player))), false);
 							return sent ? 1 : 0;
 						}))
-						.then(Commands.literal("push").requires(Commands.hasPermission(Commands.LEVEL_ADMINS)).executes(context -> {
+						.then(Commands.literal("push").requires(WorldLanguageServer::canPush).executes(context -> {
 							int playerCount = sendManifestToAll(context.getSource().getServer());
 							context.getSource().sendSuccess(() -> Component.literal(WorldLanguageMessages.publishedManifest(playerCount, language(context.getSource().getPlayer()))), false);
 							return playerCount;
@@ -160,7 +161,23 @@ public final class WorldLanguageServer {
 				&& ServerPlayNetworking.canSend(player, WorldLanguageDataPayload.TYPE);
 	}
 
+	private static boolean canPush(CommandSourceStack source) {
+		ServerPlayer player = source.getPlayer();
+		return canPublish(
+				Commands.hasPermission(Commands.LEVEL_ADMINS).test(source),
+				player != null && isSingleplayerOwner(player, source.getServer())
+		);
+	}
+
+	static boolean canPublish(boolean hasAdminPermission, boolean singleplayerOwner) {
+		return hasAdminPermission || singleplayerOwner;
+	}
+
 	private static boolean shouldUseLocalWorldFiles(ServerPlayer player, MinecraftServer server) {
+		return isSingleplayerOwner(player, server);
+	}
+
+	private static boolean isSingleplayerOwner(ServerPlayer player, MinecraftServer server) {
 		return server.isSingleplayer() && server.isSingleplayerOwner(player.nameAndId());
 	}
 

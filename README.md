@@ -76,7 +76,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 | `/amagari_lang reload` | 重新加载当前单人地图语言文件。 |
 | `/amagari_lang status` | 显示地图/远程语言状态和最近一次 ParaTranz 状态。 |
 | `/amagari_lang pull` | 请求服务器或 LAN 主机重新发布执行者当前语言的 manifest。 |
-| `/amagari_lang push` | 让服务器重新发布 manifest，通常由 OP 在修改服务端语言文件后执行。 |
+| `/amagari_lang push` | 让服务器重新发布 manifest；专用/远程服务器需要 OP，本地单人地图房主即使未开启作弊也可执行。 |
 | `/amagari_lang paratranz` | 显示 ParaTranz 子命令帮助。 |
 | `/amagari_lang paratranz config` | 打开本机 ParaTranz 设置页面。 |
 | `/amagari_lang paratranz projects` | 列出当前 API Token 可访问的 ParaTranz 项目。 |

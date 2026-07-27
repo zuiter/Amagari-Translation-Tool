@@ -76,7 +76,7 @@ Example:
 | `/amagari_lang reload` | Reload current singleplayer world language files. |
 | `/amagari_lang status` | Show world/remote language status and the latest ParaTranz status. |
 | `/amagari_lang pull` | Ask the server or LAN host to publish a fresh manifest for the executor's current language. |
-| `/amagari_lang push` | Ask the server to publish a new manifest, usually after an operator edits server-side language files. |
+| `/amagari_lang push` | Ask the server to publish a new manifest. Dedicated/remote servers require OP; the local singleplayer host may run it even when cheats are disabled. |
 | `/amagari_lang paratranz` | Show ParaTranz subcommand help. |
 | `/amagari_lang paratranz config` | Open the local ParaTranz settings screen. |
 | `/amagari_lang paratranz projects` | List ParaTranz projects visible to the current API token. |
