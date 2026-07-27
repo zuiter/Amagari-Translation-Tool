@@ -60,6 +60,7 @@ Use this checklist when manually testing remote server language delivery:
 - Create more than two cached hashes for the same server/language, then trigger a manifest load/download and confirm only the two most recently used hashes remain.
 - Edit a server-side language file, run `/amagari_lang push` as an operator, and confirm the connected client requests and receives only the changed language data.
 - Run `/amagari_lang pull` as a normal player and confirm the server publishes a fresh manifest for that player.
+- Confirm `/amagari_lang pull` and `/amagari_lang push` reach the server once without recursively re-entering the client command dispatcher, freezing, or crashing with `StackOverflowError`.
 - Confirm `/amagari_lang pull` and `/amagari_lang push` feedback is visible only to the executing player and follows that player's client language.
 - Join with a client that does not have this mod installed and confirm the server keeps running without trying to send unsupported payloads.
 - Change the client's language, reconnect or run `/amagari_lang pull`, and confirm the server offers the newly selected language plus `en_us`.
