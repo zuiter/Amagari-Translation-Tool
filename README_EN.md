@@ -8,7 +8,7 @@ Amagari Translation Tool is a Fabric translation helper mod for Minecraft 1.21.8
 
 - **World language files**: automatically creates and reads `amagari_translation_tool/lang`; files use the same format as resource-pack language files at `assets/<namespace>/lang/<language>.json`.
 - **Remote and LAN sync**: servers and LAN hosts send language manifests to joining clients with the mod installed; clients download only missing or changed data.
-- **ParaTranz pull**: configure a token in-game, list projects, pull by project name, apply language JSON immediately, and optionally overwrite the current local world's language file.
+- **ParaTranz pull**: configure a token in-game, list projects, pull by project name or numeric ID, apply language JSON immediately, and optionally overwrite the current local world's language file.
 - **Bilingual review**: press `V` to switch between target/source languages; press `H` to show source helpers for item tooltips, signs, and book text.
 - **Private feedback and cache cleanup**: command feedback is visible only to the executor; remote language cache entries unused for 7 days are deleted, and each server/language keeps at most the 2 newest hashes.
 
@@ -51,14 +51,15 @@ Language file example:
 1. Run `/amagari_lang paratranz config` to open the settings screen.
 2. Enter your ParaTranz token and confirm source language, target language, export triggering, cache count, whether successful pulls should overwrite the current world language file, and whether they should be written into the current world resource pack.
 3. Run `/amagari_lang paratranz projects` to list projects visible to the token. Project names in chat are clickable.
-4. Run `/amagari_lang paratranz pull <project>` to export, download, and apply a project by name.
+4. Run `/amagari_lang paratranz pull <project-name-or-id>` to export, download, and apply a project by name or ParaTranz numeric project ID.
 
 The settings screen can be opened directly from chat while playing in a singleplayer world or on a server; its background, controls, and labels follow the rendering flow for the current Minecraft version.
 
 Example:
 
 ```text
-/amagari_lang paratranz pull <project-name>
+/amagari_lang paratranz pull Permafrost-i18n
+/amagari_lang paratranz pull 19173
 ```
 
 ## Loading Rules
@@ -82,7 +83,7 @@ Example:
 | `/amagari_lang paratranz` | Show ParaTranz subcommand help. |
 | `/amagari_lang paratranz config` | Open the local ParaTranz settings screen. |
 | `/amagari_lang paratranz projects` | List ParaTranz projects visible to the current API token. |
-| `/amagari_lang paratranz pull <project>` | Export, download, and apply a ParaTranz project by name. |
+| `/amagari_lang paratranz pull <project-name-or-id>` | Export, download, and apply a ParaTranz project by name or numeric ID. |
 
 Command feedback is visible only to the player who ran the command. Chinese clients receive Chinese feedback; other languages default to English.
 
@@ -96,7 +97,7 @@ Command feedback is visible only to the player who ran the command. Chinese clie
 - Download cache: `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`. Disconnecting from a world clears only active in-memory state, not the global cache.
 - When `Overwrite current world language files` is enabled, the target language is written to the current local world's `amagari_translation_tool/lang/<target>.json`, and older split files for the same language, such as `zh_cn.items.json`, are removed. If no writable local world directory is active, overwrite is skipped and translations apply only to the current client session.
 - When `Write into current world resource pack` is enabled, the target language is written into the local world's `resources.zip`; a development folder pack at `<world>/resources` is also supported. If `assets/<namespace>/lang/<target>.json` exists, unrelated keys are preserved and matching keys are replaced by the ParaTranz result. If the `lang` directory exists without the target language, the file is added there. If no `lang` directory exists, it is created under an existing asset namespace. Replaced ZIPs or language files receive an `.att-backup` backup. On Windows, if an active `resources.zip` is locked by the game, the update is staged as `.att-pending`, replaced automatically after leaving the world, and retried on the next client start if necessary. Writing is skipped when the world has no local resource pack or the client is connected to a remote server.
-- `/amagari_lang paratranz pull <project>` supports project-name completions from the projects visible to the configured token.
+- `/amagari_lang paratranz pull <project-name-or-id>` supports project-name completion; numeric input completes matching project IDs visible to the configured token. Clickable project names in the project list also pull through their stable numeric IDs.
 
 ## Bilingual Review
 
