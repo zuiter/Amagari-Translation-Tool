@@ -53,9 +53,12 @@ public final class AmagariUnitChecks {
 		ParaTranzClientCommandsChecks.run();
 		WorldLanguageServerChecks.run();
 		matchesProjectsByExactCaseInsensitiveName();
+		matchesProjectsByNumericId();
+		doesNotTreatMissingNumericIdAsNameSearch();
 		reportsAmbiguousProjectMatches();
 		reportsMissingProjectMatches();
 		suggestsParaTranzProjectNamesByPartialInput();
+		suggestsParaTranzProjectIdsByNumericInput();
 		parsesNestedParaTranzProjectMemberships();
 		parsesParaTranzArtifacts();
 		parsesSingleParaTranzArtifactObject();
@@ -98,6 +101,25 @@ public final class AmagariUnitChecks {
 		check(result.project().orElseThrow().id() == 1, "expected Permafrost-i18n project id");
 	}
 
+	private static void matchesProjectsByNumericId() {
+		ParaTranzProjectMatcher.MatchResult result = ParaTranzProjectMatcher.match(List.of(
+				new ParaTranzProject(19173, "Permafrost-i18n", 3, 0, "mc"),
+				new ParaTranzProject(20000, "The Dark Ship-i18n", 3, 0, "mc")
+		), "019173");
+
+		check(result.status() == ParaTranzProjectMatcher.MatchStatus.MATCHED, "expected numeric project id match");
+		check(result.project().orElseThrow().id() == 19173, "expected project id 19173");
+	}
+
+	private static void doesNotTreatMissingNumericIdAsNameSearch() {
+		ParaTranzProjectMatcher.MatchResult result = ParaTranzProjectMatcher.match(List.of(
+				new ParaTranzProject(20000, "Archive 19173", 3, 0, "mc")
+		), "19173");
+
+		check(result.status() == ParaTranzProjectMatcher.MatchStatus.NOT_FOUND, "expected missing numeric project id to be not found");
+		check(result.project().isEmpty(), "expected numeric id lookup not to fall back to project name search");
+	}
+
 	private static void reportsAmbiguousProjectMatches() {
 		ParaTranzProjectMatcher.MatchResult result = ParaTranzProjectMatcher.match(List.of(
 				new ParaTranzProject(1, "Permafrost-i18n", 3, 0, "mc"),
@@ -132,6 +154,19 @@ public final class AmagariUnitChecks {
 		check(ParaTranzProjectSuggestions.matchingNames(projects, "perma").equals(List.of("Permafrost-i18n")), "expected case-insensitive prefix suggestions");
 		check(ParaTranzProjectSuggestions.matchingNames(projects, "i18n").equals(List.of("Permafrost-i18n", "The Dark Ship-i18n")), "expected substring suggestions");
 		check(ParaTranzProjectSuggestions.matchingNames(projects, "battle").equals(List.of("Battle of the Bards")), "expected project names with spaces to be suggested");
+	}
+
+	private static void suggestsParaTranzProjectIdsByNumericInput() {
+		List<ParaTranzProject> projects = List.of(
+				new ParaTranzProject(20000, "The Dark Ship-i18n", 3, 0, "mc"),
+				new ParaTranzProject(19173, "Permafrost-i18n", 3, 0, "mc"),
+				new ParaTranzProject(19180, "Battle of the Bards", 3, 0, "mc")
+		);
+
+		check(ParaTranzProjectSuggestions.matchingQueries(projects, "191").equals(List.of(
+				"19173",
+				"19180"
+		)), "expected numeric input to suggest matching project ids");
 	}
 
 	private static void parsesNestedParaTranzProjectMemberships() {
@@ -775,7 +810,7 @@ public final class AmagariUnitChecks {
 		check(clickEvent != null, "expected project name to have a click event");
 		check(clickEvent instanceof ClickEvent.RunCommand, "expected project click to run a command");
 		ClickEvent.RunCommand runCommand = (ClickEvent.RunCommand) clickEvent;
-		check("/amagari_lang paratranz pull Permafrost-i18n".equals(runCommand.command()), "expected project click to pull the project");
+		check("/amagari_lang paratranz pull 19173".equals(runCommand.command()), "expected project click to pull by stable project id");
 	}
 
 	private static void describesParaTranzStatus() {

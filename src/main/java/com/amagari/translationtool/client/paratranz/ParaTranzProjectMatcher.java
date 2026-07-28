@@ -14,6 +14,19 @@ public final class ParaTranzProjectMatcher {
 			return new MatchResult(MatchStatus.NOT_FOUND, Optional.empty(), List.of());
 		}
 
+		if (isNumericProjectId(normalizedQuery)) {
+			try {
+				int projectId = Integer.parseInt(normalizedQuery);
+				return projects.stream()
+						.filter(project -> project.id() == projectId)
+						.findFirst()
+						.map(MatchResult::matched)
+						.orElseGet(() -> new MatchResult(MatchStatus.NOT_FOUND, Optional.empty(), List.of()));
+			} catch (NumberFormatException exception) {
+				return new MatchResult(MatchStatus.NOT_FOUND, Optional.empty(), List.of());
+			}
+		}
+
 		List<ParaTranzProject> exactMatches = projects.stream()
 				.filter(project -> normalize(project.name()).equals(normalizedQuery))
 				.toList();
@@ -39,6 +52,10 @@ public final class ParaTranzProjectMatcher {
 
 	private static String normalize(String value) {
 		return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+	}
+
+	private static boolean isNumericProjectId(String value) {
+		return value.chars().allMatch(character -> character >= '0' && character <= '9');
 	}
 
 	public record MatchResult(
