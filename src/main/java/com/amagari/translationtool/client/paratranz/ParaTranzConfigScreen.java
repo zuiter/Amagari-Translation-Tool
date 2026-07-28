@@ -208,7 +208,7 @@ public class ParaTranzConfigScreen extends Screen {
 
 	@Override
 	public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		renderBackground(graphics, mouseX, mouseY, partialTick);
+		super.render(graphics, mouseX, mouseY, partialTick);
 		graphics.drawCenteredString(font, title, width / 2, 24, TEXT_COLOR);
 		graphics.drawString(font, WorldLanguageMessages.paraConfigTokenLabel(hasToken, languageCode), token.getX(), token.getY() - 13, LABEL_COLOR);
 		graphics.drawString(font, WorldLanguageMessages.paraConfigSourceLabel(languageCode), sourceLanguage.getX(), sourceLanguage.getY() - 13, LABEL_COLOR);
@@ -217,7 +217,6 @@ public class ParaTranzConfigScreen extends Screen {
 		if (!status.isBlank()) {
 			graphics.drawString(font, status, formLeft, height - 24, status.equals(WorldLanguageMessages.paraConfigSaved(languageCode)) ? TEXT_COLOR : ERROR_COLOR);
 		}
-		super.render(graphics, mouseX, mouseY, partialTick);
 	}
 
 	@Override
