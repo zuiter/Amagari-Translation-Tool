@@ -53,6 +53,8 @@ Language file example:
 3. Run `/amagari_lang paratranz projects` to list projects visible to the token. Project names in chat are clickable.
 4. Run `/amagari_lang paratranz pull <project>` to export, download, and apply a project by name.
 
+The settings screen can be opened directly from chat while playing in a singleplayer world or on a server; its background, controls, and labels follow the rendering flow for the current Minecraft version.
+
 Example:
 
 ```text
