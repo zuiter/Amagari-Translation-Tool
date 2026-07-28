@@ -38,7 +38,7 @@ public final class WorldLanguageMessages {
 					"/amagari_lang status - 查看最近一次地图语言加载结果。",
 					"/amagari_lang paratranz projects - 列出当前 API Token 可用的 ParaTranz 项目。",
 					"/amagari_lang paratranz config - 打开 ParaTranz 设置页面。",
-					"/amagari_lang paratranz pull <项目名> - 从 ParaTranz 拉取项目导出并应用。",
+					"/amagari_lang paratranz pull <项目名或ID> - 从 ParaTranz 拉取项目导出并应用。",
 					"/amagari_lang pull - 从服务器请求最新地图语言清单。",
 					"/amagari_lang push - OP 或本地单人地图房主向在线玩家发布最新地图语言清单。"
 			);
@@ -50,7 +50,7 @@ public final class WorldLanguageMessages {
 				"/amagari_lang status - Show the latest world language load result.",
 				"/amagari_lang paratranz projects - List ParaTranz projects available to the API token.",
 				"/amagari_lang paratranz config - Open the ParaTranz settings screen.",
-				"/amagari_lang paratranz pull <project> - Pull and apply a ParaTranz project export.",
+				"/amagari_lang paratranz pull <project-name-or-id> - Pull and apply a ParaTranz project export.",
 				"/amagari_lang pull - Request the latest world language manifest from the server.",
 				"/amagari_lang push - Publish the latest world language manifest to online players. OP or local singleplayer host."
 		);
@@ -62,14 +62,14 @@ public final class WorldLanguageMessages {
 					"ParaTranz 命令：",
 					"/amagari_lang paratranz projects - 列出可拉取项目。",
 					"/amagari_lang paratranz config - 打开 ParaTranz 设置页面。",
-					"/amagari_lang paratranz pull <项目名> - 拉取并应用指定项目。"
+					"/amagari_lang paratranz pull <项目名或ID> - 拉取并应用指定项目。"
 			);
 		}
 		return List.of(
 				"ParaTranz commands:",
 				"/amagari_lang paratranz projects - List pullable projects.",
 				"/amagari_lang paratranz config - Open ParaTranz settings.",
-				"/amagari_lang paratranz pull <project> - Pull and apply the selected project."
+				"/amagari_lang paratranz pull <project-name-or-id> - Pull and apply the selected project."
 		);
 	}
 
@@ -195,7 +195,7 @@ public final class WorldLanguageMessages {
 				? "当前 API Token 可用的 ParaTranz 项目（点击项目名直接拉取）："
 				: "ParaTranz projects available to the API token (click a project name to pull):"));
 		for (ParaTranzProject project : projects) {
-			String command = "/amagari_lang paratranz pull " + project.name();
+			String command = "/amagari_lang paratranz pull " + project.id();
 			MutableComponent line = Component.literal(" - ")
 					.append(Component.literal(project.name()).withStyle(clickableProjectStyle(command)))
 					.append(Component.literal(" (" + project.id() + ")"));

@@ -69,12 +69,12 @@ public final class ParaTranzContext {
 				}));
 	}
 
-	public static void applyProject(Minecraft client, String projectName) {
+	public static void applyProject(Minecraft client, String projectQuery) {
 		Path gameDirectory = client.gameDirectory.toPath();
 		long sessionGeneration = SESSION_GENERATION.get();
 		Optional<Path> worldDirectory = WorldLanguageContext.getWorldDirectory();
 		CompletableFuture
-				.supplyAsync(() -> findProject(gameDirectory, projectName), EXECUTOR)
+				.supplyAsync(() -> findProject(gameDirectory, projectQuery), EXECUTOR)
 				.whenComplete((match, throwable) -> client.execute(() -> {
 					if (sessionGeneration != SESSION_GENERATION.get()) {
 						return;
@@ -83,7 +83,7 @@ public final class ParaTranzContext {
 						reportFailure(client, throwable);
 						return;
 					}
-					handleMatch(client, gameDirectory, projectName, match, worldDirectory, sessionGeneration);
+					handleMatch(client, gameDirectory, projectQuery, match, worldDirectory, sessionGeneration);
 				}));
 	}
 
@@ -241,30 +241,30 @@ public final class ParaTranzContext {
 		return LAST_REPORT.get();
 	}
 
-	public static CompletableFuture<List<String>> suggestProjectNames(Path gameDirectory, String input) {
+	public static CompletableFuture<List<String>> suggestProjectQueries(Path gameDirectory, String input) {
 		List<ParaTranzProject> cachedProjects = PROJECTS_CACHE.get();
 		if (!cachedProjects.isEmpty()) {
-			return CompletableFuture.completedFuture(ParaTranzProjectSuggestions.matchingNames(cachedProjects, input));
+			return CompletableFuture.completedFuture(ParaTranzProjectSuggestions.matchingQueries(cachedProjects, input));
 		}
-		return CompletableFuture.supplyAsync(() -> ParaTranzProjectSuggestions.matchingNames(loadProjects(gameDirectory), input), EXECUTOR)
+		return CompletableFuture.supplyAsync(() -> ParaTranzProjectSuggestions.matchingQueries(loadProjects(gameDirectory), input), EXECUTOR)
 				.exceptionally(throwable -> List.of());
 	}
 
 	private static void handleMatch(
 			Minecraft client,
 			Path gameDirectory,
-			String projectName,
+			String projectQuery,
 			ParaTranzProjectMatcher.MatchResult match,
 			Optional<Path> worldDirectory,
 			long sessionGeneration
 	) {
 		String languageCode = selectedLanguage(client);
 		if (match.status() == ParaTranzProjectMatcher.MatchStatus.NOT_FOUND) {
-			send(client, WorldLanguageMessages.paraTranzProjectNotFound(projectName, languageCode));
+			send(client, WorldLanguageMessages.paraTranzProjectNotFound(projectQuery, languageCode));
 			return;
 		}
 		if (match.status() == ParaTranzProjectMatcher.MatchStatus.AMBIGUOUS) {
-			send(client, WorldLanguageMessages.paraTranzProjectAmbiguous(projectName, match.candidates(), languageCode));
+			send(client, WorldLanguageMessages.paraTranzProjectAmbiguous(projectQuery, match.candidates(), languageCode));
 			return;
 		}
 
@@ -300,8 +300,8 @@ public final class ParaTranzContext {
 		}
 	}
 
-	private static ParaTranzProjectMatcher.MatchResult findProject(Path gameDirectory, String projectName) {
-		return ParaTranzProjectMatcher.match(loadProjects(gameDirectory), projectName);
+	private static ParaTranzProjectMatcher.MatchResult findProject(Path gameDirectory, String projectQuery) {
+		return ParaTranzProjectMatcher.match(loadProjects(gameDirectory), projectQuery);
 	}
 
 	private static ParaTranzCache.CachedTranslations downloadAndCache(Path gameDirectory, ParaTranzProject project) {
