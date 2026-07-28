@@ -20,6 +20,10 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ## [未发布]
 
+### 新增
+
+- `/amagari_lang paratranz pull` 现在可以使用 ParaTranz 数字项目 ID 拉取，例如 `/amagari_lang paratranz pull 19173`；数字输入支持 ID 补全，聊天项目列表的可点击名称也会通过稳定的项目 ID 执行拉取。
+
 ## [0.0.5] - 2026-07-27
 
 ### 修复
