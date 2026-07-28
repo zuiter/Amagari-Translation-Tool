@@ -53,6 +53,8 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 3. 执行 `/amagari_lang paratranz projects` 列出 Token 可访问的项目；聊天里的项目名可以点击直接拉取。
 4. 执行 `/amagari_lang paratranz pull <项目名>` 按项目名导出、下载并应用语言 JSON。
 
+设置页面可以直接从单人地图或服务器内的聊天命令打开；背景、控件和标签会按当前 Minecraft 版本的界面渲染流程正确显示。
+
 示例：
 
 ```text

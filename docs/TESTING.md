@@ -72,6 +72,7 @@ Use this checklist when manually testing remote server language delivery:
 Use this checklist when manually testing ParaTranz downloads:
 
 - Run `/amagari_lang paratranz config` and confirm the ParaTranz settings screen opens, preserves an existing token when the field is left blank, clears the token only when `Clear token` is selected, and persists source language, target language, trigger export, cached artifact count, the current-world overwrite checkbox, and the current-world resource-pack write checkbox.
+- While inside a world with menu background blur enabled, run `/amagari_lang paratranz config` from chat and confirm the first rendered frame does not crash with `Can only blur once per frame`; confirm the background is drawn once and all field labels remain visible above it.
 - Open the ParaTranz settings screen in Chinese and English at a wide/fullscreen size and confirm the three export/world-write checkboxes share one compact row when their labels fit. Resize to a narrow window and confirm rows wrap without text overlap, clipping, or controls leaving the form.
 - Run `/amagari_lang paratranz` and confirm it shows ParaTranz subcommand help without requesting the project list.
 - Run `/amagari_lang paratranz projects`; confirm it lists projects visible to the configured token, and that clicking a project name runs the matching `/amagari_lang paratranz pull <project>` command.
