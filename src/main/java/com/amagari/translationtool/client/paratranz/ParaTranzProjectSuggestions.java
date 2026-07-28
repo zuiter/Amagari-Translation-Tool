@@ -16,4 +16,17 @@ public final class ParaTranzProjectSuggestions {
 				.sorted(Comparator.comparing(name -> name.toLowerCase(Locale.ROOT)))
 				.toList();
 	}
+
+	public static List<String> matchingQueries(List<ParaTranzProject> projects, String input) {
+		String needle = input == null ? "" : input.trim();
+		if (!needle.isBlank() && needle.chars().allMatch(character -> character >= '0' && character <= '9')) {
+			return projects.stream()
+					.map(ParaTranzProject::id)
+					.sorted()
+					.map(String::valueOf)
+					.filter(projectId -> projectId.startsWith(needle))
+					.toList();
+		}
+		return matchingNames(projects, input);
+	}
 }
