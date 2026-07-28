@@ -14,6 +14,18 @@ public final class ParaTranzClientCommandsChecks {
 
 		checkServerFallback(dispatcher, "amagari_lang pull");
 		checkServerFallback(dispatcher, "amagari_lang push");
+		checkParses(dispatcher, "amagari_lang paratranz pull Permafrost-i18n");
+		checkParses(dispatcher, "amagari_lang paratranz pull 19173");
+	}
+
+	private static void checkParses(
+			CommandDispatcher<FabricClientCommandSource> dispatcher,
+			String command
+	) {
+		var result = dispatcher.parse(command, null);
+		if (result.getReader().canRead() || !result.getExceptions().isEmpty()) {
+			throw new AssertionError("expected client command to parse fully: " + command);
+		}
 	}
 
 	private static void checkServerFallback(
