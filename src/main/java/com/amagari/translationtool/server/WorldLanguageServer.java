@@ -78,11 +78,11 @@ public final class WorldLanguageServer {
 										.executes(context -> sendParaTranzCommand(context.getSource().getPlayerOrException(), ParaTranzCommandPayload.Action.CONFIG)))
 								.then(Commands.literal("pull")
 										.executes(context -> sendParaTranzCommand(context.getSource().getPlayerOrException(), ParaTranzCommandPayload.Action.PROJECTS))
-										.then(Commands.argument("projectName", StringArgumentType.greedyString())
+										.then(Commands.argument("projectNameOrId", StringArgumentType.greedyString())
 												.executes(context -> sendParaTranzCommand(
 														context.getSource().getPlayerOrException(),
 														ParaTranzCommandPayload.Action.PULL,
-														StringArgumentType.getString(context, "projectName")
+														StringArgumentType.getString(context, "projectNameOrId")
 												)))))
 		));
 	}
