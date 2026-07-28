@@ -8,7 +8,7 @@ Amagari Translation Tool 是一个面向 Minecraft 1.20.6 Fabric 的翻译辅助
 
 - **地图语言文件**：自动创建并读取 `amagari_translation_tool/lang`，语言文件格式与资源包 `assets/<namespace>/lang/<language>.json` 一致。
 - **远程与局域网同步**：服务器或开放到局域网的主机会向安装本模组的加入者按需发送语言 manifest，客户端只下载缺失或 hash 变化的数据。
-- **ParaTranz 拉取**：可在游戏内配置 Token、列出项目、按项目名拉取导出、立即应用语言 JSON，也可选择覆盖当前本地地图语言文件。
+- **ParaTranz 拉取**：可在游戏内配置 Token、列出项目、按项目名或数字 ID 拉取导出、立即应用语言 JSON，也可选择覆盖当前本地地图语言文件。
 - **双语校对**：默认 `V` 切换目标语言/源语言；默认 `H` 显示源文辅助，包括物品侧边 tooltip、告示牌源文 HUD 和书本文本 `ⓘ` hover。
 - **私有反馈与缓存清理**：命令反馈只发给执行者；远程语言缓存会自动清理 7 天未使用的数据，并且每个服务器/语言只保留最近 2 个 hash。
 
@@ -51,14 +51,15 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 1. 执行 `/amagari_lang paratranz config` 打开设置页面。
 2. 填入 ParaTranz Token，并确认源语言、目标语言、是否拉取前触发导出、缓存数量、是否覆盖当前地图语言文件，以及是否写入当前地图资源包。
 3. 执行 `/amagari_lang paratranz projects` 列出 Token 可访问的项目；聊天里的项目名可以点击直接拉取。
-4. 执行 `/amagari_lang paratranz pull <项目名>` 按项目名导出、下载并应用语言 JSON。
+4. 执行 `/amagari_lang paratranz pull <项目名或ID>`，按项目名称或 ParaTranz 数字项目 ID 导出、下载并应用语言 JSON。
 
 设置页面可以直接从单人地图或服务器内的聊天命令打开；背景、控件和标签会按当前 Minecraft 版本的界面渲染流程正确显示。
 
 示例：
 
 ```text
-/amagari_lang paratranz pull <项目名>
+/amagari_lang paratranz pull Permafrost-i18n
+/amagari_lang paratranz pull 19173
 ```
 
 ## 加载规则
@@ -82,7 +83,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 | `/amagari_lang paratranz` | 显示 ParaTranz 子命令帮助。 |
 | `/amagari_lang paratranz config` | 打开本机 ParaTranz 设置页面。 |
 | `/amagari_lang paratranz projects` | 列出当前 API Token 可访问的 ParaTranz 项目。 |
-| `/amagari_lang paratranz pull <项目名>` | 按项目名导出、下载并应用 ParaTranz 项目语言 JSON。 |
+| `/amagari_lang paratranz pull <项目名或ID>` | 按项目名称或数字 ID 导出、下载并应用 ParaTranz 项目语言 JSON。 |
 
 命令反馈只会发送给执行者本人。客户端语言为中文时显示中文反馈，其他语言默认显示英文反馈。
 
@@ -96,7 +97,7 @@ saves/<地图名>/amagari_translation_tool/lang/en_us.json
 - 下载缓存位于 `.minecraft/amagari_translation_tool/paratranz_cache/<projectId>/`。断开世界只会清理本次会话内的激活状态，不会删除全局缓存。
 - 勾选“覆盖当前地图语言文件”后，目标语言会写入当前本地地图的 `amagari_translation_tool/lang/<目标语言>.json`，并删除同语言旧分片文件，例如 `zh_cn.items.json`。如果当前没有可写入的本地地图目录，则跳过覆盖，只应用到本次客户端会话。
 - 勾选“写入当前地图资源包”后，目标语言会写入当前本地地图的 `resources.zip`；开发用文件夹资源包也可放在地图目录的 `resources` 文件夹中。已有 `assets/<命名空间>/lang/<目标语言>.json` 时会保留其他 key，仅由 ParaTranz 结果覆盖同名 key；已有 `lang` 目录但缺少目标语言文件时会直接新增；完全没有 `lang` 目录时会在现有资源命名空间下自动创建。被替换的 ZIP 或旧语言文件会保留 `.att-backup` 备份。Windows 上若活动中的 `resources.zip` 正被游戏占用，更新会暂存为 `.att-pending`，退出地图后自动替换，未完成时会在下次启动游戏时重试。如果地图没有本地资源包或当前连接的是远程服务器，则跳过资源包写入。
-- `/amagari_lang paratranz pull <项目名>` 支持项目名补全；补全来源是当前 Token 可访问的项目。
+- `/amagari_lang paratranz pull <项目名或ID>` 支持项目名补全；开始输入数字时会补全当前 Token 可访问的匹配项目 ID。项目列表中的可点击项目名也会使用稳定的数字 ID 执行拉取。
 
 ## 双语校对
 
