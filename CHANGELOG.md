@@ -17,6 +17,10 @@ Amagari Translation Tool 的重要更改都会记录在这里。
 
 ## [未发布]
 
+### 新增
+
+- `/amagari_lang paratranz pull` 现在可以使用 ParaTranz 数字项目 ID 拉取，例如 `/amagari_lang paratranz pull 19173`；数字输入支持 ID 补全，聊天项目列表的可点击名称也会通过稳定的项目 ID 执行拉取。
+
 ### 修复
 
 - 修复 Minecraft 1.20.4 至 1.21.11 中执行 `/amagari_lang paratranz config` 时设置界面重复请求背景模糊的问题；1.21.10 不再因同一帧模糊两次而崩溃，其他受影响版本的背景、控件与标签层级也恢复为单次正确渲染。
