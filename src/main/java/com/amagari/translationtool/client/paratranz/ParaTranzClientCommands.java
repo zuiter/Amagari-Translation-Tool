@@ -39,11 +39,11 @@ public final class ParaTranzClientCommands {
 										.executes(context -> openConfig(context.getSource().getClient())))
 								.then(ClientCommands.literal("pull")
 										.executes(context -> listProjects(context.getSource().getClient()))
-										.then(ClientCommands.argument("projectName", StringArgumentType.greedyString())
+										.then(ClientCommands.argument("projectNameOrId", StringArgumentType.greedyString())
 												.suggests(ParaTranzClientCommands::suggestProjects)
 												.executes(context -> {
-													String projectName = StringArgumentType.getString(context, "projectName");
-													return pullProject(context.getSource().getClient(), projectName);
+													String projectQuery = StringArgumentType.getString(context, "projectNameOrId");
+													return pullProject(context.getSource().getClient(), projectQuery);
 												}))))
 						.then(ClientCommands.literal("status")
 								.executes(context -> {
@@ -96,8 +96,8 @@ public final class ParaTranzClientCommands {
 		return 1;
 	}
 
-	public static int pullProject(Minecraft client, String projectName) {
-		ParaTranzContext.applyProject(client, projectName);
+	public static int pullProject(Minecraft client, String projectQuery) {
+		ParaTranzContext.applyProject(client, projectQuery);
 		return 1;
 	}
 
@@ -116,9 +116,9 @@ public final class ParaTranzClientCommands {
 	private static CompletableFuture<Suggestions> suggestProjects(CommandContext<FabricClientCommandSource> context, SuggestionsBuilder builder) {
 		Path gameDirectory = context.getSource().getClient().gameDirectory.toPath();
 		String input = builder.getRemaining();
-		return ParaTranzContext.suggestProjectNames(gameDirectory, input)
-				.thenApply(projectNames -> {
-					projectNames.forEach(builder::suggest);
+		return ParaTranzContext.suggestProjectQueries(gameDirectory, input)
+				.thenApply(projectQueries -> {
+					projectQueries.forEach(builder::suggest);
 					return builder.build();
 				});
 	}
